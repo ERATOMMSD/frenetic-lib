@@ -1,25 +1,30 @@
 from typing import Generator, Iterator
 
 import pandas as pd
-from frenetic.core.representations.abstract import RoadGenerator
+
+from frenetic.executors.abstract_executor import Outcome
+from frenetic.representations.abstract_generator import RoadGenerator
+from frenetic.core.objective import AbstractObjective
 
 import logging
+
+
 logger = logging.getLogger(__name__)
 
 
 class FreneticCore(object):
 
-    def __init__(self, representation: RoadGenerator, mutator=None, exploiter=None, crossover=None,
-                 feature_threshold=0.0, dynamic_threshold=False):
+    def __init__(self, representation: RoadGenerator, objective: AbstractObjective,
+                 mutator=None, exploiter=None, crossover=None,
+                 dynamic_threshold=False):
         self.representation = representation
+        self.objective = objective
 
         self.mutator = mutator
         self.exploiter = exploiter
         self.crossover = crossover
 
         self.df = None
-
-        self.search_feature = "max_oob_percentage"
 
         # Warnings when operators are None
         self._warn_if_none(crossover, "crossover")
@@ -31,12 +36,6 @@ class FreneticCore(object):
         self.min_length_to_mutate = 5
         self.crossover_max_visits = 10
 
-        # quality filters for mutation / crossover parents
-        self.target_feature = "max_oob_percentage"
-        self.goal = max # min
-        self.minimize = self.goal is min
-
-        self.feature_threshold = feature_threshold
         self.dynamic_threshold = dynamic_threshold
 
     def _warn_if_none(self, var, name):
@@ -64,9 +63,6 @@ class FreneticCore(object):
 
             yield from mutated_tests
 
-            # TODO: we first execute all mutations (without re-selecting best parent)
-            #  But then we do crossovers _using_ the new mutations, right?
-
             # then we crossover
             crossover_tests = self.get_crossover_tests()
             yield from crossover_tests
@@ -81,37 +77,36 @@ class FreneticCore(object):
 
     def get_mutated_tests(self) -> list:
         """Returns a list of tests"""
-        parent = self._get_best_parent()  # returns a row
+        parent = self._get_best_mutation_parent()  # returns a row
         if parent is None:
             logger.warning("Couldn't find a good parent. Skipping.")
             return []
 
         # TODO: why isn't this in the filter?
         #  Shouldn't we get the best parent of min_length?
-        if len(parent.test.item()) < self.min_length_to_mutate:
-            logger.debug("Best parent's test is too short.")
-            return []
+        # if len(parent.test.item()) < self.min_length_to_mutate:
+        #     logger.debug("Best parent's test is too short.")
+        #     return []
 
         logger.debug(f"Best unvisited parent for mutation is {parent.index[0]}")
-        self.df.at[parent.index[0], 'visited'] = 1
+        self.df.at[parent.name, 'visited'] = 1
 
-        if self.exploiter and parent.outcome.item() == 'FAIL':
+        if self.exploiter and parent.outcome == Outcome.FAIL:
             return self._perform_modifications(self.exploiter.get_all(), parent, stop_reproduction=True)
-        elif self.mutator and parent.outcome.item() == 'PASS':
+        elif self.mutator and parent.outcome == Outcome.PASS:
             return self._perform_modifications(self.mutator.get_all(), parent)
         else:
             logger.warning("No modification was applied because there is no exploiter nor mutator defined.")
             return []
 
     def _perform_modifications(self, functions, parent, stop_reproduction=False) -> list:
-        test = parent.test.item()
-        if test is None:
+        if parent.test is None:
             return []
 
-        test_info = self.get_parent_info(parent.index.item())
+        test_info = self.get_parent_info(parent.name)
         test_info["visited"] = 1 if stop_reproduction else 0
 
-        modified_tests = [dict(test=function(test), method=name, **test_info) for name, function in functions]
+        modified_tests = [dict(test=function(parent.test), method=name, **test_info) for name, function in functions]
 
         # TODO: There's stuff in here that I don't understand. Why is suggestions a dict?
         #   Why do we store standard in "parameter"?
@@ -148,32 +143,28 @@ class FreneticCore(object):
     # def mutator_defined(self, outcome):
     #     return (outcome == 'FAIL' and self.executor is not None) or (outcome == 'PASS' and self.mutator is not None)
 
-    def _get_best_parent(self):
-        if len(self.df) <= 0:
+    def _get_best_mutation_parent(self) -> pd.Series:
+        if self.df is None or len(self.df) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
             return
 
-        assert self.target_feature in self.df.columns, "Target feature is recorded in history records."
+        assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
 
         # we take the best parent that hasn't been visited yet, whose feature is below/above the threshold
         selection = self._select_by_maxvisits_and_threshold(max_visits=0)
-
-        if len(selection) > 0:
-            parent = selection.sort_values(self.target_feature, ascending=self.minimize).head(1)
-            return parent
+        selection = selection[selection.test.apply(len) >= self.min_length_to_mutate]
+        return self.objective.get_best(selection)
 
     def _select_by_maxvisits_and_threshold(self, max_visits=0):
-        pass_fail_filter = self.df.outcome.isin(["PASS", "FAIL"])
+        pass_fail_filter = self.df.outcome.isin([Outcome.PASS, Outcome.FAIL])  # TODO: this is domain-specific and needs to be dropped
         max_visit_filter = self.df.visited <= max_visits
-        threshold_filter = self.df[self.target_feature] <= self.feature_threshold if self.minimize else self.df[self.target_feature] >= self.feature_threshold
-
-        return self.df[pass_fail_filter & max_visit_filter & threshold_filter]
+        return self.objective.filter_by_threshold(self.df[pass_fail_filter & max_visit_filter])
 
     def get_parent_info(self, p_index) -> dict:
         parent = self.df.iloc[p_index]
         return {'parent_1_index': p_index,
                 'parent_1_outcome': parent['outcome'],
-                'parent_1_'+self.target_feature: parent[self.target_feature],
+                'parent_1_'+self.objective.feature: parent[self.objective.feature],
                 'generation': parent['generation'] + 1}
 
     def get_crossover_tests(self) -> list:
@@ -184,9 +175,8 @@ class FreneticCore(object):
         # parents_recombination
         candidates = self._select_crossover_candidates()
         if len(candidates) > 0:
-            generated_children = self.crossover.generate(candidates)
             child_tests = []
-            for child, method, info in generated_children:
+            for child, method, info in self.crossover.generate(candidates):
                 self.df.at[info['parent_1_index'], 'visited'] = self.df.iloc[info['parent_1_index']]['visited'] + 1
                 self.df.at[info['parent_2_index'], 'visited'] = self.df.iloc[info['parent_2_index']]['visited'] + 1
                 child_tests.append(dict(test=child, method=method, **info))
@@ -209,7 +199,7 @@ class FreneticCore(object):
             logger.warning("Empty history. Cannot get best parent.")
             return []
 
-        assert self.target_feature in self.df.columns, "Target feature is recorded in history records."
+        assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
 
         selection = self._select_by_maxvisits_and_threshold(self.crossover_max_visits)
         if len(selection) < self.crossover.min_size:

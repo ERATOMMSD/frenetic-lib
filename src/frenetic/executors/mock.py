@@ -1,7 +1,7 @@
 import random
 import time
 
-from frenetic.executors.abstract import Executor
+from frenetic.executors.abstract_executor import Executor
 from frenetic.utils.random import seeded_rng
 
 import logging
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class MockExecutor(Executor):
     """Inspired by SBST pipeline"""
 
-    def execute(self, the_test) -> dict:
+    def _execute(self, the_test) -> dict:
         test_outcome = seeded_rng().choice(["FAIL"]*3 + ["PASS"] * 5 + ["ERROR"])
         description = "Mocked test results"
 

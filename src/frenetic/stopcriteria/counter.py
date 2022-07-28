@@ -16,7 +16,7 @@ class CountingStop(StopCriterion):
 
     @property
     def is_random_phase(self) -> bool:
-        return self.exec_count <= self.n_random
+        return self.exec_count < self.n_random
 
 
     def execute_test(self, test):

@@ -1,6 +1,6 @@
 import numpy as np
 import abc
-from .abstract import RoadGenerator
+from .abstract_generator import RoadGenerator
 from frenetic.utils.trapezoidal_integration import frenet_to_cartesian
 from frenetic.utils.random import seeded_rng
 
