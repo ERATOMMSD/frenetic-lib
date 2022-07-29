@@ -128,6 +128,7 @@ class Vehicle:
                 'lat_jerk_squared': lat_jerks_sq,
                 'lat_cost': lat_costs,
                 'heading': heading,
+                'heading_diffs': heading_diffs,
                 'steering_control': np.array([control.steer for control in self.controls]),
                 'throttle_control': np.array([control.throttle for control in self.controls]),
                 'brake_control': np.array([control.throttle for control in self.controls]),
