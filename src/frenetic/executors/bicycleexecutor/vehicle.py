@@ -107,6 +107,7 @@ class Vehicle:
         heading = np.array(self.psis)
         heading_diffs = np.vectorize(pinegpi)(heading[1:] - heading[:-1])
 
+        # lateral with respect to heading of previous time instant
         lat_accels = np.cos(heading_diffs) * accels[1:]
         lat_jerks = (lat_accels[1:] - lat_accels[:-1]) / dt
         lat_jerks_sq = lat_jerks * lat_jerks
