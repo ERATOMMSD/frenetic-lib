@@ -15,12 +15,13 @@ def go_to_waypoints(vehicle, pid_controller, wps, desired_speed, dt):
         go_to_waypoint(vehicle, pid_controller, wp, desired_speed, dt)
 
 
-def carla_pid_on_bicycle(xs,
-                         ys,
-                         desired_speed=20,
-                         dt=0.1,
-                         pid_gains_lat={'K_P': 0.5, 'K_D': 0.01, 'K_I': 0.01},
-                         pid_gains_long = {'K_P': 2, 'K_D': 0.01, 'K_I': 0.01}):
+def execute_carla_pid_on_bicycle(xs,
+                                 ys,
+                                 desired_speed=20,
+                                 dt=0.1,
+                                 pid_gains_lat={'K_P': 0.5, 'K_D': 0.01, 'K_I': 0.01},
+                                 pid_gains_long = {'K_P': 2, 'K_D': 0.01, 'K_I': 0.01}):
+    """Returns all collected data as a dictionary."""
     pid_gains_lat['dt'] = dt
     pid_gains_long['dt'] = dt
 
@@ -36,5 +37,5 @@ def carla_pid_on_bicycle(xs,
         waypoints.append(waypoint.Waypoint(xs[i], ys[i]))
 
     go_to_waypoints(vehicle, pid_controller, waypoints, desired_speed, dt)
-    return vehicle
+    return vehicle.data()
 

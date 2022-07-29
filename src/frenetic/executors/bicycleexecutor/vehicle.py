@@ -3,6 +3,13 @@ import carla
 import vec
 
 
+def pinegpi(val):
+    new_val = val % (2 * np.pi)
+    if new_val > np.pi:
+        new_val -= 2 * np.pi
+    return new_val
+
+
 class VehicleTransform:
     def __init__(self, location):
         self.location = location
@@ -80,11 +87,47 @@ class Vehicle:
         self.psi %= 2 * np.pi
         if self.psi > np.pi:
             self.psi -= 2 * np.pi
-            
+
         self.v += dt * accel
         self.t += dt
         self.speed = self.v
         self.transform.update(self.px, self.py, self.psi)
 
     def distance_to(self, location):
-        return np.sqrt((location.x - self.px)**2 + (location.y - self.py)**2)
+        return np.sqrt((location.x - self.px) ** 2 + (location.y - self.py) ** 2)
+
+    def data(self):
+        """ Returns a dictionary of all collected data across time."""
+        accels = np.array(self.accels)
+        dt = self.ts[1] - self.ts[0]
+        jerks = (accels[1:] - accels[:-1]) / dt  # along longitudinal
+        jerks_sq = jerks * jerks
+        costs = dt * np.cumsum(jerks_sq)
+
+        heading = np.array(self.psis)
+        heading_diffs = np.vectorize(pinegpi)(heading[1:] - heading[:-1])
+
+        lat_accels = np.cos(heading_diffs) * accels[1:]
+        lat_jerks = (lat_accels[1:] - lat_accels[:-1]) / dt
+        lat_jerks_sq = lat_jerks * lat_jerks
+        lat_costs = dt * np.cumsum(lat_jerks_sq)
+
+        return {'ts': np.array(self.ts),  # sampling time instants where data is collected
+                'short_ts': np.array(self.ts[:-1]),  # time instants where jerks and costs are collected
+                'short_short_ts': np.array(self.ts[:-1]),  # time instants where lat_jerks and lat_costs are collected
+                'pxs': np.array(self.pxs),
+                'pys': np.array(self.pys),
+                'speed': np.array(self.vs),
+                'acceleration': accels,
+                'jerk': jerks,
+                'jerk_squared': jerks_sq,
+                'cost': costs,
+                'lat_acceleration': lat_accels,
+                'lat_jerk': lat_jerks,
+                'lat_jerk_squared': lat_jerks_sq,
+                'lat_cost': lat_costs,
+                'heading': heading,
+                'steering_control': np.array([control.steer for control in self.controls]),
+                'throttle_control': np.array([control.throttle for control in self.controls]),
+                'brake_control': np.array([control.throttle for control in self.controls]),
+                }
