@@ -2,7 +2,7 @@ import logging as log
 
 import numpy as np
 
-from frenetic.utils.random import seeded_rng
+from freneticlib.utils.random import seeded_rng
 
 
 class Crossover:

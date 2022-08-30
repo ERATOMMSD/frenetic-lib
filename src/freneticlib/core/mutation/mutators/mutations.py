@@ -3,8 +3,8 @@ from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
-from frenetic.utils.gaussian import gaussian_alteration
-from frenetic.utils.random import seeded_rng
+from freneticlib.utils.gaussian import gaussian_alteration
+from freneticlib.utils.random import seeded_rng
 
 
 class AbstractMutator(ABC):

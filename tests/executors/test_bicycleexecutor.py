@@ -2,10 +2,10 @@ import numpy as np
 import pytest
 from shapely import geometry
 
-from frenetic.core.objective import MaxObjective
-from frenetic.executors.bicycle.bicycleexecutor import BicycleExecutor
-from frenetic.representations import cartesian_generator
-from frenetic.utils import geometry_utils
+from freneticlib.core.objective import MaxObjective
+from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
+from freneticlib.representations import cartesian_generator
+from freneticlib.utils import geometry_utils
 
 test = [(0, 0), (0, 50), (50, 50), (75, 100), (100, 100)]
 

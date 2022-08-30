@@ -9,7 +9,7 @@ from typing import List, Tuple
 import numpy as np
 from shapely import geometry
 
-from frenetic.utils.random import seeded_rng
+from freneticlib.utils.random import seeded_rng
 
 
 def catmull_rom_spline(p0, p1, p2, p3, num_points=20):

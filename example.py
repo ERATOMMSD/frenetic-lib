@@ -1,14 +1,14 @@
-from frenetic.core.core import FreneticCore
-from frenetic.core.mutation.exploiters import exploiters
-from frenetic.core.objective import MaxObjective
-from frenetic.executors.bicycle.bicycleexecutor import BicycleExecutor
-from frenetic.representations.cartesian_generator import CatmullRomGenerator
-from frenetic.representations.kappa_generator import FixStepKappaGenerator
-from frenetic.frenetic import Frenetic
-from frenetic.stopcriteria.counter import CountingStop
-from frenetic.core.mutation.mutators.mutations import FreneticMutator
-from frenetic.core.mutation.crossovers.crossovers import Crossover
-from frenetic.utils.random import seeded_rng
+from freneticlib.core.core import FreneticCore
+from freneticlib.core.mutation.exploiters import exploiters
+from freneticlib.core.objective import MaxObjective
+from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
+from freneticlib.representations.cartesian_generator import CatmullRomGenerator
+from freneticlib.representations.kappa_generator import FixStepKappaGenerator
+from freneticlib.frenetic import Frenetic
+from freneticlib.stopcriteria.counter import CountingStop
+from freneticlib.core.mutation.mutators.mutations import FreneticMutator
+from freneticlib.core.mutation.crossovers.crossovers import Crossover
+from freneticlib.utils.random import seeded_rng
 
 
 import logging

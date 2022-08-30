@@ -1,6 +1,6 @@
 import numpy as np
 
-from frenetic.utils import random
+from freneticlib.utils import random
 from tests import conftest
 
 

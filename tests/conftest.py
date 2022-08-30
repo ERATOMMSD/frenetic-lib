@@ -1,6 +1,6 @@
 import pytest
 
-from frenetic.utils import random
+from freneticlib.utils import random
 
 TEST_SEED = 54321
 

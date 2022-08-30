@@ -2,8 +2,8 @@ import logging
 import random
 import time
 
-from frenetic.executors.abstract_executor import AbstractExecutor
-from frenetic.utils.random import seeded_rng
+from freneticlib.executors.abstract_executor import AbstractExecutor
+from freneticlib.utils.random import seeded_rng
 
 logger = logging.getLogger(__name__)
 

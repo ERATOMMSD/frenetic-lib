@@ -1,22 +1,22 @@
 import pytest
 
-from frenetic.core.core import FreneticCore
-from frenetic.core.mutation.crossovers.crossovers import Crossover
-from frenetic.core.mutation.exploiters.exploiters import (
+from freneticlib.core.core import FreneticCore
+from freneticlib.core.mutation.crossovers.crossovers import Crossover
+from freneticlib.core.mutation.exploiters.exploiters import (
     FirstVariableExploiter,
     SingleVariableExploiter,
 )
-from frenetic.core.mutation.mutators.mutations import FreneticMutator
-from frenetic.core.objective import MaxObjective
-from frenetic.executors.bicycle.bicycleexecutor import BicycleExecutor
-from frenetic.frenetic import Frenetic
-from frenetic.representations import (
+from freneticlib.core.mutation.mutators.mutations import FreneticMutator
+from freneticlib.core.objective import MaxObjective
+from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
+from freneticlib.frenetic import Frenetic
+from freneticlib.representations import (
     bezier_generator,
     cartesian_generator,
     kappa_generator,
     theta_generator,
 )
-from frenetic.stopcriteria.counter import CountingStop
+from freneticlib.stopcriteria.counter import CountingStop
 
 
 @pytest.fixture

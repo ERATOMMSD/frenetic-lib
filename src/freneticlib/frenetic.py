@@ -2,9 +2,9 @@ import logging
 
 import matplotlib.pyplot as plt
 
-from frenetic.core.core import FreneticCore
-from frenetic.executors.abstract_executor import AbstractExecutor
-from frenetic.stopcriteria.abstract import StopCriterion
+from freneticlib.core.core import FreneticCore
+from freneticlib.executors.abstract_executor import AbstractExecutor
+from freneticlib.stopcriteria.abstract import StopCriterion
 
 logger = logging.getLogger(__name__)
 

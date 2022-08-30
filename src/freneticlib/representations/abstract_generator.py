@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from frenetic.utils.random import seeded_rng
+from freneticlib.utils.random import seeded_rng
 
 
 class RoadGenerator(abc.ABC):

@@ -1,4 +1,4 @@
-from frenetic.utils import catmull
+from freneticlib.utils import catmull
 
 from .abstract_generator import RoadGenerator
 

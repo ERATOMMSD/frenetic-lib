@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from frenetic.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_generator import RoadGenerator
 
 
 class RoadGenerator_TestImpl(RoadGenerator):

@@ -2,7 +2,7 @@ import abc
 
 import numpy as np
 
-from frenetic.utils.random import seeded_rng
+from freneticlib.utils.random import seeded_rng
 
 from .abstract_generator import RoadGenerator
 

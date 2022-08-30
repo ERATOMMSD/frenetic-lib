@@ -3,9 +3,9 @@ import logging
 from pathlib import Path
 from typing import Union
 
-from frenetic.core.objective import AbstractObjective
-from frenetic.executors.normalizers.abstract_normalizer import AbstractNormalizer
-from frenetic.representations.abstract_generator import RoadGenerator
+from freneticlib.core.objective import AbstractObjective
+from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
+from freneticlib.representations.abstract_generator import RoadGenerator
 
 logger = logging.getLogger(__name__)
 

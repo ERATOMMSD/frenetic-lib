@@ -4,9 +4,9 @@ from typing import Iterator
 
 import pandas as pd
 
-from frenetic.core.objective import AbstractObjective
-from frenetic.executors.abstract_executor import Outcome
-from frenetic.representations.abstract_generator import RoadGenerator
+from freneticlib.core.objective import AbstractObjective
+from freneticlib.executors.abstract_executor import Outcome
+from freneticlib.representations.abstract_generator import RoadGenerator
 
 logger = logging.getLogger(__name__)
 

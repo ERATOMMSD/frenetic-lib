@@ -3,10 +3,10 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
-from frenetic.core.core import FreneticCore
-from frenetic.core.mutation.mutators.mutations import FreneticMutator
-from frenetic.core.objective import MaxObjective
-from frenetic.executors.abstract_executor import Outcome
+from freneticlib.core.core import FreneticCore
+from freneticlib.core.mutation.mutators.mutations import FreneticMutator
+from freneticlib.core.objective import MaxObjective
+from freneticlib.executors.abstract_executor import Outcome
 
 
 class TestFreneticCore_AskTell(object):

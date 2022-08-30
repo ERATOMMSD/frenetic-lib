@@ -1,6 +1,6 @@
 import pytest
 
-from frenetic.stopcriteria.counter import CountingStop
+from freneticlib.stopcriteria.counter import CountingStop
 
 
 class TestCountingStop(object):
