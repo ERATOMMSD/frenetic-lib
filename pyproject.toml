@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 #[project]
-name = "frenetic"
+name = "freneticlib"
 version = "0.0.1"
 description = "The Frenetic algorithm for search-based ADS road generation"
 license = "MIT"
@@ -59,3 +59,4 @@ max-line-length = "127"
 
 [tool.isort]
 profile = "black"
+multi_line_output = 3
