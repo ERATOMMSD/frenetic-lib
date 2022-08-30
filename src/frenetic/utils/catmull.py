@@ -4,6 +4,7 @@
 # https://doi.org/10.1145/3368089.3409730
 
 import math
+from typing import List, Tuple
 
 import numpy as np
 from shapely import geometry
@@ -50,7 +51,7 @@ def catmull_rom_spline(p0, p1, p2, p3, num_points=20):
     return c
 
 
-def catmull_rom_chain(points: list[tuple], num_spline_points=20) -> list:
+def catmull_rom_chain(points: List[tuple], num_spline_points=20) -> list:
     """Calculate Catmull-Rom for a chain of points and return the combined curve."""
     # The curve cr will contain an array of (x, y) points.
     cr = []
@@ -62,14 +63,14 @@ def catmull_rom_chain(points: list[tuple], num_spline_points=20) -> list:
     return cr
 
 
-def catmull_rom_2d(points: list[tuple], num_points=20) -> list[tuple]:
+def catmull_rom_2d(points: List[tuple], num_points=20) -> List[tuple]:
     if len(points) < 4:
         raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     np_points_array = catmull_rom_chain(points, num_points)
     return [(p[0], p[1]) for p in np_points_array]
 
 
-def catmull_rom(points: list[tuple], num_spline_points=20) -> list[tuple]:
+def catmull_rom(points: List[tuple], num_spline_points=20) -> List[tuple]:
     if len(points) < 4:
         raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     assert all(x[3] == points[0][3] for x in points)
@@ -79,7 +80,7 @@ def catmull_rom(points: list[tuple], num_spline_points=20) -> list[tuple]:
     return [(p[0], p[1], z0, width) for p in np_point_array]
 
 
-Tuple2F = tuple[float, float]
+Tuple2F = Tuple[float, float]
 
 
 class ControlNodesGenerator:
@@ -106,7 +107,7 @@ class ControlNodesGenerator:
         self.max_angle = max_angle
         self.seg_length = seg_length
 
-    def generate_control_nodes(self, num_control_nodes: int = None) -> list[Tuple2F]:
+    def generate_control_nodes(self, num_control_nodes: int = None) -> List[Tuple2F]:
         if not num_control_nodes:
             num_control_nodes = self.num_control_nodes
 

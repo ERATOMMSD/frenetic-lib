@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Dict, List, Tuple
 
 import numpy as np
 
@@ -13,7 +13,7 @@ class AbstractMutator(ABC):
         pass
 
     @staticmethod
-    def get_test(parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def get_test(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         if isinstance(parent_info, dict):
             test = parent_info["test"]
         else:
@@ -35,17 +35,17 @@ class ListMutator(AbstractMutator):
             ("randomly replace 1 to 5 values", self.random_replacement),
         ]
 
-    def remove_from_front(self, parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def remove_from_front(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = self.get_test(parent_info)
         assert len(test) >= self.min_length
         return test[seeded_rng().integers(1, 5) :]
 
-    def remove_from_tail(self, parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def remove_from_tail(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = self.get_test(parent_info)
         assert len(test) >= self.min_length
         return test[: -seeded_rng().integers(1, 5)]
 
-    def randomly_remove_kappas(self, parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def randomly_remove_kappas(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = self.get_test(parent_info)
         assert len(test) >= self.min_length
         # number of test to be removed
@@ -58,7 +58,7 @@ class ListMutator(AbstractMutator):
             k -= 1
         return modified_test
 
-    def extend(self, parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def extend(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = self.get_test(parent_info)
         modified_test = test[:]
         for i in range(seeded_rng().integers(1, 5)):
@@ -66,7 +66,7 @@ class ListMutator(AbstractMutator):
             modified_test.append(self.generator.get_value(modified_test))
         return modified_test
 
-    def random_replacement(self, parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def random_replacement(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = self.get_test(parent_info)
         # Randomly replace values
         indices = seeded_rng().choice(len(test), seeded_rng().integers(1, 5), replace=False)
@@ -82,7 +82,7 @@ class ValueAlterationMutator(AbstractMutator):
         return [("alter the values by 0.9 ~ 1.1", self.random_alteration)]
 
     @staticmethod
-    def random_alteration(parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def random_alteration(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = ValueAlterationMutator.get_test(parent_info)
 
         modified = False
@@ -117,7 +117,7 @@ class ValueAlterationMutatorKappaStep(AbstractMutator):
         return [("alter the values by 0.9 ~ 1.1", self.random_alteration)]
 
     @staticmethod
-    def random_alteration(parent_info: Union[dict, list[float]]) -> list[Union[float, tuple[float, float]]]:
+    def random_alteration(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
         test = ValueAlterationMutator.get_test(parent_info)
         modified = False
 
@@ -151,7 +151,7 @@ class FreNNetMutator(AbstractMutator):
     def get_all(self):
         return [("freNNetic alteration", self.frennetic_alteration)]
 
-    def frennetic_alteration(self, parent_info: dict) -> dict[str, list[float]]:
+    def frennetic_alteration(self, parent_info: dict) -> Dict[str, List[float]]:
         oob_distances = np.array(parent_info["oob_distances"])
         road = np.array(parent_info["road"])
         car_positions = parent_info["car_positions"]
@@ -166,10 +166,10 @@ class GaussianPushMutator(ListMutator):
     def get_all(self):
         return [("gaussian push", self.gaussian_push)]
 
-    def gaussian_push(self, parent_info: dict) -> dict[str, list[float]]:
+    def gaussian_push(self, parent_info: dict) -> Dict[str, List[float]]:
         test = parent_info["test"]
 
-        result: dict[str, list[float]] = {}
+        result: Dict[str, List[float]] = {}
         oob_distances = np.array(parent_info["oob_distances"])
         road = np.array(parent_info["road"])
         car_positions = parent_info["car_positions"]
