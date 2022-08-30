@@ -1,13 +1,11 @@
 import abc
+import logging
 from pathlib import Path
 from typing import Union
 
 from frenetic.core.objective import AbstractObjective
-from frenetic.representations.abstract_generator import RoadGenerator
 from frenetic.executors.normalizers.abstract_normalizer import AbstractNormalizer
-
-import logging
-
+from frenetic.representations.abstract_generator import RoadGenerator
 
 logger = logging.getLogger(__name__)
 

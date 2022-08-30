@@ -1,4 +1,5 @@
 import abc
+
 from frenetic.utils.random import seeded_rng
 
 

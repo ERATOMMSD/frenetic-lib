@@ -3,11 +3,12 @@
 # by V. Riccio and P. Tonella
 # https://doi.org/10.1145/3368089.3409730
 
-import numpy as np
 import math
 
-from frenetic.utils.random import seeded_rng
+import numpy as np
 from shapely import geometry
+
+from frenetic.utils.random import seeded_rng
 
 
 def catmull_rom_spline(p0, p1, p2, p3, num_points=20):

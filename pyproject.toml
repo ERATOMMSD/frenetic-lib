@@ -53,3 +53,9 @@ test = ["pytest"]
 
 [tool.black]
 line-length=127
+
+[tool.pylint.format]
+max-line-length = "127"
+
+[tool.isort]
+profile = "black"

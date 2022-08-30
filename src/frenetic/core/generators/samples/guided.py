@@ -1,9 +1,9 @@
-from roadsearch.generators.normalizers.kappa_normalizer import KappaNormalizer
-from roadsearch.generators.virtual_road_generator import VirtualRoadsGenerator
-from roadsearch.generators.representations.kappa_generator import FixStepKappaGenerator
-from roadsearch.generators.mutators.mutations import GaussianPushMutator
-from roadsearch.generators.exploiters.exploiters import SingleVariableExploiter
 from roadsearch.generators.crossovers.crossovers import Crossover
+from roadsearch.generators.exploiters.exploiters import SingleVariableExploiter
+from roadsearch.generators.mutators.mutations import GaussianPushMutator
+from roadsearch.generators.normalizers.kappa_normalizer import KappaNormalizer
+from roadsearch.generators.representations.kappa_generator import FixStepKappaGenerator
+from roadsearch.generators.virtual_road_generator import VirtualRoadsGenerator
 
 # Crossover setup
 CROSS_FREQ = 30

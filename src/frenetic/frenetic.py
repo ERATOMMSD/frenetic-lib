@@ -1,10 +1,10 @@
+import logging
+
 import matplotlib.pyplot as plt
 
 from frenetic.core.core import FreneticCore
 from frenetic.executors.abstract_executor import AbstractExecutor
 from frenetic.stopcriteria.abstract import StopCriterion
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,6 @@ class Frenetic(object):
     """Main class for Frenetic-based ADS testing."""
 
     def __init__(self, core: FreneticCore, executor: AbstractExecutor, stop_criterion: StopCriterion):
-
         self.core = core
         self.executor = executor
         self.stop_criterion = stop_criterion

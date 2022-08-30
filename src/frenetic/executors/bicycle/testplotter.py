@@ -1,7 +1,7 @@
 import carlapidonbicycle as cpb
+import matplotlib.pyplot as pl
 import numpy as np
 import numpy.random as ra
-import matplotlib.pyplot as pl
 
 
 def frenet_to_cartesian(x0, y0, theta0, ss, kappas):

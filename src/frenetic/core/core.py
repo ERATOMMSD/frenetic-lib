@@ -1,13 +1,12 @@
 import ast
+import logging
 from typing import Iterator
 
 import pandas as pd
 
+from frenetic.core.objective import AbstractObjective
 from frenetic.executors.abstract_executor import Outcome
 from frenetic.representations.abstract_generator import RoadGenerator
-from frenetic.core.objective import AbstractObjective
-
-import logging
 
 logger = logging.getLogger(__name__)
 

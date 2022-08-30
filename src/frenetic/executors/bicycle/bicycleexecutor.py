@@ -6,13 +6,13 @@ from shapely import geometry, ops
 
 from frenetic.executors.abstract_executor import AbstractExecutor, Outcome
 from frenetic.utils import geometry_utils
+
 from . import carlapidonbicycle as cpb
 
 logger = logging.getLogger(__name__)
 
 
 class BicycleExecutor(AbstractExecutor):
-
     # the features that the simplified bicycle model calculates. use them directly or calculate other values.
     CALCULATED_FEATURES = [
         "pxs",

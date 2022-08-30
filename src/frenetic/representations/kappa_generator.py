@@ -1,7 +1,10 @@
-import numpy as np
 import abc
-from .abstract_generator import RoadGenerator
+
+import numpy as np
+
 from frenetic.utils.random import seeded_rng
+
+from .abstract_generator import RoadGenerator
 
 
 def frenet_to_cartesian(x0, y0, theta0, ss, kappas):

@@ -1,10 +1,10 @@
-import numpy as np
+from abc import ABC, abstractmethod
 from typing import Union
+
+import numpy as np
 
 from frenetic.utils.gaussian import gaussian_alteration
 from frenetic.utils.random import seeded_rng
-
-from abc import ABC, abstractmethod
 
 
 class AbstractMutator(ABC):
@@ -88,7 +88,6 @@ class ValueAlterationMutator(AbstractMutator):
         modified = False
 
         while not modified:
-
             modified_test = []
 
             for k in test:

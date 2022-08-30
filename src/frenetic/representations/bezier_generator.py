@@ -1,7 +1,8 @@
-from frenetic.utils.catmull import ControlNodesGenerator
-from frenetic.representations.abstract_generator import RoadGenerator
-import numpy as np
 import bezier
+import numpy as np
+
+from frenetic.representations.abstract_generator import RoadGenerator
+from frenetic.utils.catmull import ControlNodesGenerator
 
 
 def points_to_deltas(control_points):

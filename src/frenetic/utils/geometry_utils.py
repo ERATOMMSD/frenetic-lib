@@ -1,7 +1,6 @@
 import numpy as np
-
-from shapely import geometry as geom
 from scipy import interpolate
+from shapely import geometry as geom
 
 
 def cubic_spline(

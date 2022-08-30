@@ -1,12 +1,23 @@
+import numpy as np
 from roadsearch.generators.crossovers.crossovers import Crossover
 from roadsearch.generators.exploiters.exploiters import Exploiter
-from roadsearch.generators.mutators.mutations import ValueAlterationMutatorKappaStep, ValueAlterationMutator
-from roadsearch.generators.representations.kappa_generator import FixStepKappaGenerator, KappaGenerator
-from roadsearch.generators.representations.theta_generator import FixStepThetaGenerator, ThetaGenerator
-from roadsearch.generators.representations.cartesian_generator import CatmullRomGenerator
+from roadsearch.generators.mutators.mutations import (
+    ValueAlterationMutator,
+    ValueAlterationMutatorKappaStep,
+)
 from roadsearch.generators.representations.bezier_generator import BezierGenerator
+from roadsearch.generators.representations.cartesian_generator import (
+    CatmullRomGenerator,
+)
+from roadsearch.generators.representations.kappa_generator import (
+    FixStepKappaGenerator,
+    KappaGenerator,
+)
+from roadsearch.generators.representations.theta_generator import (
+    FixStepThetaGenerator,
+    ThetaGenerator,
+)
 from roadsearch.generators.virtual_road_generator import VirtualRoadsGenerator
-import numpy as np
 
 # Crossover setup
 CROSS_FREQ = 30

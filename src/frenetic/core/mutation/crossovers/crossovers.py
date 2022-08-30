@@ -1,4 +1,5 @@
 import logging as log
+
 import numpy as np
 
 from frenetic.utils.random import seeded_rng
