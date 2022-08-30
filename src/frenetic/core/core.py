@@ -1,4 +1,5 @@
-from typing import Generator, Iterator
+import ast
+from typing import Iterator
 
 import pandas as pd
 
@@ -7,14 +8,20 @@ from frenetic.representations.abstract_generator import RoadGenerator
 from frenetic.core.objective import AbstractObjective
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 class FreneticCore(object):
-
-    def __init__(self, representation: RoadGenerator, objective: AbstractObjective,
-                 mutator=None, exploiter=None, crossover=None,
-                 dynamic_threshold=False):
+    def __init__(
+        self,
+        representation: RoadGenerator,
+        objective: AbstractObjective,
+        mutator=None,
+        exploiter=None,
+        crossover=None,
+        dynamic_threshold=False,
+    ):
         self.representation = representation
         self.objective = objective
 
@@ -39,10 +46,10 @@ class FreneticCore(object):
             logger.warning(f"No {name} operator was chosen.")
 
     def ask_random(self) -> dict:
-        return dict(test=self.representation.generate(), method='random', visited=0, generation=0)
+        return dict(test=self.representation.generate(), method="random", visited=0, generation=0)
 
     def tell(self, record: dict):
-        logger.debug(f"Tell:") # {road} -> {result}")
+        logger.debug("Tell:")  # {road} -> {result}")
         if self.df is None:
             self.df = pd.DataFrame([record])
         else:
@@ -60,7 +67,7 @@ class FreneticCore(object):
 
             for idx, test in enumerate(mutated_tests):
                 # stop mutating if one of the mutants already produced a failure
-                if idx > 0 and "outcome" in mutated_tests[idx-1] and mutated_tests[idx-1]["outcome"] == Outcome.FAIL:
+                if idx > 0 and "outcome" in mutated_tests[idx - 1] and mutated_tests[idx - 1]["outcome"] == Outcome.FAIL:
                     break  # break on first fail
                 else:
                     yield test
@@ -91,7 +98,7 @@ class FreneticCore(object):
         #     return []
 
         logger.debug(f"Best unvisited parent for mutation is {parent.index[0]}")
-        self.df.at[parent.name, 'visited'] = 1
+        self.df.at[parent.name, "visited"] = 1
 
         if self.exploiter and parent.outcome == Outcome.FAIL:
             return self._perform_modifications(self.exploiter.get_all(), parent, stop_reproduction=True)
@@ -112,7 +119,7 @@ class FreneticCore(object):
         for name, function in functions:
             try:
                 modified_tests.append(dict(test=function(parent.test), method=name, **test_info))
-            except:
+            except Exception:
                 logger.error(f"Error during modification of test {test_info} during function {name}", exc_info=True)
 
         return modified_tests
@@ -161,16 +168,20 @@ class FreneticCore(object):
         return self.objective.get_best(selection)
 
     def _select_by_maxvisits_and_threshold(self, max_visits=0):
-        pass_fail_filter = self.df.outcome.isin([Outcome.PASS, Outcome.FAIL])  # TODO: this is domain-specific and needs to be dropped
+        pass_fail_filter = self.df.outcome.isin(
+            [Outcome.PASS, Outcome.FAIL]
+        )  # TODO: this is domain-specific and needs to be dropped
         max_visit_filter = self.df.visited <= max_visits
         return self.objective.filter_by_threshold(self.df[pass_fail_filter & max_visit_filter])
 
     def get_parent_info(self, p_index) -> dict:
         parent = self.df.iloc[p_index]
-        return {'parent_1_index': p_index,
-                'parent_1_outcome': parent['outcome'],
-                'parent_1_'+self.objective.feature: parent[self.objective.feature],
-                'generation': parent['generation'] + 1}
+        return {
+            "parent_1_index": p_index,
+            "parent_1_outcome": parent["outcome"],
+            "parent_1_" + self.objective.feature: parent[self.objective.feature],
+            "generation": parent["generation"] + 1,
+        }
 
     def get_crossover_tests(self) -> list:
         if self.crossover is None:
@@ -182,8 +193,8 @@ class FreneticCore(object):
         if len(candidates) > 0:
             child_tests = []
             for child, method, info in self.crossover.generate(candidates):
-                self.df.at[info['parent_1_index'], 'visited'] = self.df.iloc[info['parent_1_index']]['visited'] + 1
-                self.df.at[info['parent_2_index'], 'visited'] = self.df.iloc[info['parent_2_index']]['visited'] + 1
+                self.df.at[info["parent_1_index"], "visited"] = self.df.iloc[info["parent_1_index"]]["visited"] + 1
+                self.df.at[info["parent_2_index"], "visited"] = self.df.iloc[info["parent_2_index"]]["visited"] + 1
                 child_tests.append(dict(test=child, method=method, **info))
             return child_tests
         else:
@@ -208,16 +219,19 @@ class FreneticCore(object):
 
         selection = self._select_by_maxvisits_and_threshold(self.crossover_max_visits)
         if len(selection) < self.crossover.min_size:
-            logger.warning(f"Couldn't select enough tests to generate crossover candidates. Select: {len(selection)}, Crossover min size: {self.crossover.min_size}")
+            logger.warning(
+                "Couldn't select enough tests to generate crossover candidates. "
+                + f"Select: {len(selection)}, Crossover min size: {self.crossover.min_size}"
+            )
             return []
 
         candidates = []
         for index, candidate in selection.iterrows():
-            test = candidate['test']
+            test = candidate["test"]
             if type(test) == str:
-                logger.warning('Test was stored as a string value in the data frame.')
+                logger.warning("Test was stored as a string value in the data frame.")
                 test = ast.literal_eval(test)
-            candidates.append( (test, self.get_parent_info(index)) )
+            candidates.append((test, self.get_parent_info(index)))
 
         return candidates
 
@@ -230,4 +244,3 @@ class FreneticCore(object):
     #             self.df.at[info['parent_1_index'], 'visited'] = self.df.iloc[info['parent_1_index']]['visited'] + 1
     #             self.df.at[info['parent_2_index'], 'visited'] = self.df.iloc[info['parent_2_index']]['visited'] + 1
     #             self.execute_test(child, method=method, info=info)
-

@@ -5,16 +5,14 @@ from frenetic.executors.abstract_executor import AbstractExecutor
 from frenetic.stopcriteria.abstract import StopCriterion
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 class Frenetic(object):
     """Main class for Frenetic-based ADS testing."""
 
-    def __init__(self,
-                 core: FreneticCore,
-                 executor: AbstractExecutor,
-                 stop_criterion: StopCriterion):
+    def __init__(self, core: FreneticCore, executor: AbstractExecutor, stop_criterion: StopCriterion):
 
         self.core = core
         self.executor = executor
@@ -31,7 +29,6 @@ class Frenetic(object):
             self.core.tell(result_dict)
         logger.info("--------------------------------------------")
         logger.info("Finishing Initial Random Generation Phase...")
-
 
         logger.info("Starting Mutation Phase...")
         logger.info("--------------------------")
@@ -51,7 +48,7 @@ class Frenetic(object):
     def store_results(self, filename: str = None):
         if filename is not None:
             logger.info(f"Storing the all the experiment results in file {filename}.")
-            self.core.df.drop(columns=["test"]).to_csv(filename) #, indent=4)
+            self.core.df.drop(columns=["test"]).to_csv(filename)  # , indent=4)
 
     def plot(self, filename: str = None):
         """

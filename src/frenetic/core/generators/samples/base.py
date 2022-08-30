@@ -20,8 +20,8 @@ LENGTH = 20
 VARIATION = 0
 
 # Bounds for theta generation
-BOUND = np.pi/6
-DELTA = np.pi/8
+BOUND = np.pi / 6
+DELTA = np.pi / 8
 
 
 # Generators that are represented with single variable arrays
@@ -31,28 +31,31 @@ class Frenetic(VirtualRoadsGenerator):
         max_length = 30
         length = int(min(map_size // step_size, max_length))
         generator = FixStepKappaGenerator(length=length, variation=5, step=step_size)
-        super().__init__(executor=executor, map_size=map_size,
-                         random_budget=int(time_budget * 0.1),
-                         strict_father=False,
-                         generator=generator,
-                         mutator=FreneticMutator(generator),
-                         exploiter=SingleVariableExploiter(),
-                         min_oob_threshold=1.0,
-                         normalizer=KappaNormalizer(global_bound=generator.global_bound,
-                                                    local_bound=generator.local_bound),
-                         crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ))
+        super().__init__(
+            executor=executor,
+            map_size=map_size,
+            random_budget=int(time_budget * 0.1),
+            strict_father=False,
+            generator=generator,
+            mutator=FreneticMutator(generator),
+            exploiter=SingleVariableExploiter(),
+            min_oob_threshold=1.0,
+            normalizer=KappaNormalizer(global_bound=generator.global_bound, local_bound=generator.local_bound),
+            crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ),
+        )
 
 
 # Generators that are represented with single variable arrays
 class FreneticFine(VirtualRoadsGenerator):
     def __init__(self, executor=None, map_size=None):
         generator = FixStepKappaGenerator(length=40, variation=0, step=5)
-        super().__init__(executor=executor, map_size=map_size,
-                         random_budget_percentage=0.1,
-                         strict_father=False,
-                         generator=generator,
-                         mutator=ValueAlterationMutator(),
-                         exploiter=SingleVariableExploiter(),
-                         crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ))
-
-
+        super().__init__(
+            executor=executor,
+            map_size=map_size,
+            random_budget_percentage=0.1,
+            strict_father=False,
+            generator=generator,
+            mutator=ValueAlterationMutator(),
+            exploiter=SingleVariableExploiter(),
+            crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ),
+        )

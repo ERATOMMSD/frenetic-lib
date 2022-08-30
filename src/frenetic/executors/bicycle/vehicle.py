@@ -97,7 +97,7 @@ class Vehicle:
         return np.sqrt((location.x - self.px) ** 2 + (location.y - self.py) ** 2)
 
     def data(self):
-        """ Returns a dictionary of all collected data across time."""
+        """Returns a dictionary of all collected data across time."""
         accels = np.array(self.accels)
         dt = self.ts[1] - self.ts[0]
         jerks = (accels[1:] - accels[:-1]) / dt  # along longitudinal
@@ -113,23 +113,24 @@ class Vehicle:
         lat_jerks_sq = lat_jerks * lat_jerks
         lat_costs = dt * np.cumsum(lat_jerks_sq)
 
-        return {'ts': np.array(self.ts),  # sampling time instants where data is collected
-                'short_ts': np.array(self.ts[:-1]),  # time instants where jerks and costs are collected
-                'short_short_ts': np.array(self.ts[:-1]),  # time instants where lat_jerks and lat_costs are collected
-                'pxs': np.array(self.pxs),
-                'pys': np.array(self.pys),
-                'speed': np.array(self.vs),
-                'acceleration': accels,
-                'jerk': jerks,
-                'jerk_squared': jerks_sq,
-                'cost': costs,
-                'lat_acceleration': lat_accels,
-                'lat_jerk': lat_jerks,
-                'lat_jerk_squared': lat_jerks_sq,
-                'lat_cost': lat_costs,
-                'heading': heading,
-                'heading_diffs': heading_diffs,
-                'steering_control': np.array([control.steer for control in self.controls]),
-                'throttle_control': np.array([control.throttle for control in self.controls]),
-                'brake_control': np.array([control.throttle for control in self.controls]),
-                }
+        return {
+            "ts": np.array(self.ts),  # sampling time instants where data is collected
+            "short_ts": np.array(self.ts[:-1]),  # time instants where jerks and costs are collected
+            "short_short_ts": np.array(self.ts[:-1]),  # time instants where lat_jerks and lat_costs are collected
+            "pxs": np.array(self.pxs),
+            "pys": np.array(self.pys),
+            "speed": np.array(self.vs),
+            "acceleration": accels,
+            "jerk": jerks,
+            "jerk_squared": jerks_sq,
+            "cost": costs,
+            "lat_acceleration": lat_accels,
+            "lat_jerk": lat_jerks,
+            "lat_jerk_squared": lat_jerks_sq,
+            "lat_cost": lat_costs,
+            "heading": heading,
+            "heading_diffs": heading_diffs,
+            "steering_control": np.array([control.steer for control in self.controls]),
+            "throttle_control": np.array([control.throttle for control in self.controls]),
+            "brake_control": np.array([control.throttle for control in self.controls]),
+        }

@@ -5,7 +5,6 @@ import pandas as pd
 
 
 class AbstractObjective(abc.ABC):
-
     def __init__(self, feature, per_simulation_aggregator: Union[callable, str, list, dict], threshold=None):
         self.feature = feature
         self.threshold = threshold
@@ -26,7 +25,6 @@ class AbstractObjective(abc.ABC):
 
 
 class MaxObjective(AbstractObjective):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.minimize = False
@@ -38,7 +36,6 @@ class MaxObjective(AbstractObjective):
 
 
 class MinObjective(AbstractObjective):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.minimize = True

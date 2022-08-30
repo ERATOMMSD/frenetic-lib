@@ -20,22 +20,21 @@ def frenet_to_cartesian(x0, y0, theta0, ss, kappas):
 
 
 class AbstractKappaGenerator(RoadGenerator, abc.ABC):
-
-    def __init__(self, length: int, variation: int = 0,
-                 global_bound: float = 0.07, local_bound: float = 0.05):
+    def __init__(self, length: int, variation: int = 0, global_bound: float = 0.07, local_bound: float = 0.05):
         self.global_bound = global_bound
         self.local_bound = local_bound
         super().__init__(length, variation)
 
     def get_kappa(self, last_kappa):
-        return seeded_rng().uniform(max(-self.global_bound, last_kappa - self.local_bound),
-                             min(self.global_bound, last_kappa + self.local_bound))
+        return seeded_rng().uniform(
+            max(-self.global_bound, last_kappa - self.local_bound), min(self.global_bound, last_kappa + self.local_bound)
+        )
 
 
 class FixStepKappaGenerator(AbstractKappaGenerator):
-
-    def __init__(self, length: int, variation: int = 0, step: float = 10.0,
-                 global_bound: float = 0.0698, local_bound: float = 0.05):
+    def __init__(
+        self, length: int, variation: int = 0, step: float = 10.0, global_bound: float = 0.0698, local_bound: float = 0.05
+    ):
         self.step = step
         super().__init__(length=length, variation=variation, global_bound=global_bound, local_bound=local_bound)
 
@@ -51,9 +50,15 @@ class FixStepKappaGenerator(AbstractKappaGenerator):
 
 
 class KappaGenerator(AbstractKappaGenerator):
-
-    def __init__(self, length: int, variation: int = 0, low_step: float = 5.0, high_step: float = 15.0,
-                 global_bound: float = 0.07, local_bound: float = 0.05):
+    def __init__(
+        self,
+        length: int,
+        variation: int = 0,
+        low_step: float = 5.0,
+        high_step: float = 15.0,
+        global_bound: float = 0.07,
+        local_bound: float = 0.05,
+    ):
         self.low_step = low_step
         self.high_step = high_step
         super().__init__(length=length, variation=variation, global_bound=global_bound, local_bound=local_bound)

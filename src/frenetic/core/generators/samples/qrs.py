@@ -23,14 +23,17 @@ class TupleRoadGenerator(VirtualRoadsGenerator):
         else:
             mutator = ValueAlterationMutator()
 
-        super().__init__(executor=executor, map_size=map_size,
-                         random_budget_percentage=0.1,
-                         strict_father=False,
-                         generator=generator,
-                         mutator=mutator,
-                         exploiter=Exploiter(),
-                         crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ),
-                         store_data=store_data)
+        super().__init__(
+            executor=executor,
+            map_size=map_size,
+            random_budget_percentage=0.1,
+            strict_father=False,
+            generator=generator,
+            mutator=mutator,
+            exploiter=Exploiter(),
+            crossover=Crossover(size=CROSS_SIZE, frequency=CROSS_FREQ),
+            store_data=store_data,
+        )
 
     # Quick hack to rename the generator when creating custom configurations
     def get_name(self):
@@ -43,26 +46,13 @@ class TupleRoadGenerator(VirtualRoadsGenerator):
 # Generators that are represented with single variable arrays
 class Frenetic(TupleRoadGenerator):
     def __init__(self, executor=None, map_size=None):
-        generator = FixStepKappaGenerator(
-            length=25,
-            variation=0,
-            step=7.5,
-            global_bound=0.07,
-            local_bound=0.05
-        )
+        generator = FixStepKappaGenerator(length=25, variation=0, step=7.5, global_bound=0.07, local_bound=0.05)
         super().__init__(executor=executor, map_size=map_size, generator=generator)
 
 
 class FreneticStep(TupleRoadGenerator):
     def __init__(self, executor=None, map_size=None):
-        generator = KappaGenerator(
-            length=28,
-            variation=0,
-            low_step=0.5,
-            high_step=16.16,
-            global_bound=0.08,
-            local_bound=0.05
-        )
+        generator = KappaGenerator(length=28, variation=0, low_step=0.5, high_step=16.16, global_bound=0.08, local_bound=0.05)
         super().__init__(executor=executor, map_size=map_size, generator=generator)
 
 
@@ -75,41 +65,25 @@ class TheTicStep(TupleRoadGenerator):
             variation=0,
             low_step=step_mean - step_variance,
             high_step=step_mean + step_variance,
-            bound=np.pi/5,
-            delta=np.pi/23
+            bound=np.pi / 5,
+            delta=np.pi / 23,
         )
         super().__init__(executor=executor, map_size=map_size, generator=generator)
 
 
 class TheTic(TupleRoadGenerator):
     def __init__(self, executor=None, map_size=None):
-        generator = FixStepThetaGenerator(
-            length=36,
-            variation=0,
-            step=5,
-            bound=np.pi/8,
-            delta=np.pi/44
-        )
+        generator = FixStepThetaGenerator(length=36, variation=0, step=5, bound=np.pi / 8, delta=np.pi / 44)
         super().__init__(executor=executor, map_size=map_size, generator=generator)
 
 
 class DJGenerative(TupleRoadGenerator):
     def __init__(self, executor=None, map_size=None):
-        generator = CatmullRomGenerator(
-            control_nodes=10,
-            max_angle=50,
-            seg_length=22.5,
-            num_spline_nodes=10
-        )
+        generator = CatmullRomGenerator(control_nodes=10, max_angle=50, seg_length=22.5, num_spline_nodes=10)
         super().__init__(executor=executor, map_size=map_size, generator=generator)
 
 
 class Bezier(TupleRoadGenerator):
     def __init__(self, executor=None, map_size=None):
-        generator = BezierGenerator(
-            control_nodes=28,
-            max_angle=40,
-            seg_length=6.92,
-            interpolation_nodes=9
-        )
+        generator = BezierGenerator(control_nodes=28, max_angle=40, seg_length=6.92, interpolation_nodes=9)
         super().__init__(executor=executor, map_size=map_size, generator=generator)

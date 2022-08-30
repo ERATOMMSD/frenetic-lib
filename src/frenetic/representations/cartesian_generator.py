@@ -1,11 +1,12 @@
 from frenetic.utils import catmull
 from .abstract_generator import RoadGenerator
 
+
 def points_to_deltas(control_points):
-    x1,y1 = 0, 0
+    x1, y1 = 0, 0
     res = []
     for x, y in control_points:
-        res.append((x-x1, y-y1))
+        res.append((x - x1, y - y1))
         x1 = x
         y1 = y
     return res
@@ -14,20 +15,18 @@ def points_to_deltas(control_points):
 def deltas_to_points(deltas):
     res = []
     x0, y0 = 0, 0
-    for x,y in deltas:
-        x0+=x
-        y0+=y
+    for x, y in deltas:
+        x0 += x
+        y0 += y
         res.append((x0, y0))
     return res
 
 
 class CatmullRomGenerator(RoadGenerator):
-
     def __init__(self, control_nodes: int, variation: int = 0, max_angle=35, num_spline_nodes=20, seg_length=10):
-        self.generator = catmull.ControlNodesGenerator(num_control_nodes=control_nodes,
-                                               max_angle=max_angle,
-                                               seg_length=seg_length,
-                                               num_spline_nodes=num_spline_nodes)
+        self.generator = catmull.ControlNodesGenerator(
+            num_control_nodes=control_nodes, max_angle=max_angle, seg_length=seg_length, num_spline_nodes=num_spline_nodes
+        )
 
         super().__init__(length=control_nodes, variation=variation)
 

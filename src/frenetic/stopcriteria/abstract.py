@@ -2,7 +2,6 @@ import abc
 
 
 class StopCriterion(abc.ABC):
-
     @property
     @abc.abstractmethod
     def is_random_phase(self) -> bool:

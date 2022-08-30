@@ -87,8 +87,14 @@ class ControlNodesGenerator:
     NUM_INITIAL_SEGMENTS_THRESHOLD = 2
     NUM_UNDO_ATTEMPTS = 20
 
-    def __init__(self, num_control_nodes: int = 15, max_angle: int = None, seg_length=None,
-                 num_spline_nodes: int = None, initial_node: Tuple2F = (10.0, 0.0)):
+    def __init__(
+        self,
+        num_control_nodes: int = 15,
+        max_angle: int = None,
+        seg_length=None,
+        num_spline_nodes: int = None,
+        initial_node: Tuple2F = (10.0, 0.0),
+    ):
         assert num_control_nodes > 1 and num_spline_nodes > 0
         assert 0 <= max_angle <= 360
         assert seg_length > 0

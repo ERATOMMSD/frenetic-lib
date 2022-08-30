@@ -50,3 +50,6 @@ pytest = {version = "*", optional = true }
 
 [tool.poetry.extras]
 test = ["pytest"]
+
+[tool.black]
+line-length=127

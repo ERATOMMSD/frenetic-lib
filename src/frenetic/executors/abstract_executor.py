@@ -1,5 +1,4 @@
 import abc
-import enum
 from pathlib import Path
 from typing import Union
 
@@ -20,12 +19,13 @@ class Outcome(object):  # enum makes things complicated
 
 
 class AbstractExecutor(abc.ABC):
-
-    def __init__(self,
-                 representation: RoadGenerator,
-                 objective: AbstractObjective,
-                 normalizer: AbstractNormalizer = None,
-                 results_path: Union[str, Path] = None):
+    def __init__(
+        self,
+        representation: RoadGenerator,
+        objective: AbstractObjective,
+        normalizer: AbstractNormalizer = None,
+        results_path: Union[str, Path] = None,
+    ):
         self.representation = representation
         self.normalizer = normalizer
         self.objective = objective
@@ -48,7 +48,7 @@ class AbstractExecutor(abc.ABC):
 
         try:
             test_dict.update(self._execute(test))
-        except:
+        except Exception:
             logger.error("Error during execution of test.", exc_info=True)
             test_dict.update({self.objective.feature: None, "outcome": Outcome.ERROR})
             if self.exit_on_error:
@@ -59,5 +59,3 @@ class AbstractExecutor(abc.ABC):
     @abc.abstractmethod
     def _execute(self, test) -> dict:
         pass
-
-

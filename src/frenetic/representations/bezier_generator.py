@@ -8,19 +8,17 @@ def points_to_deltas(control_points):
     x1, y1 = 0, 0
     res = []
     for x, y in control_points:
-        res.append((x-x1, y-y1))
+        res.append((x - x1, y - y1))
         x1 = x
         y1 = y
     return res
 
 
 class BezierGenerator(RoadGenerator):
-
     def __init__(self, control_nodes: int, variation: int = 0, max_angle=35, interpolation_nodes=20, seg_length=10):
-        self.generator = ControlNodesGenerator(num_control_nodes=control_nodes,
-                                               max_angle=max_angle,
-                                               seg_length=seg_length,
-                                               num_spline_nodes=interpolation_nodes)
+        self.generator = ControlNodesGenerator(
+            num_control_nodes=control_nodes, max_angle=max_angle, seg_length=seg_length, num_spline_nodes=interpolation_nodes
+        )
 
         self.interpolation_nodes = interpolation_nodes
 

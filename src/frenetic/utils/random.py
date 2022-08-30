@@ -29,4 +29,3 @@ def reset_rng(seed=None) -> np.random.Generator:
 
     if seed is not None:  # if we provide a seed, then call seeded_rng()
         return seeded_rng(seed)
-
