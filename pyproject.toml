@@ -1,0 +1,52 @@
+# Need Poetry, because setuptools cannot handle extra sources, it seems
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+#[project]
+name = "frenetic"
+version = "0.0.1"
+description = "The Frenetic algorithm for search-based ADS road generation"
+license = "MIT"
+authors = [
+    "Stefan Klikovits <stefan@klikovits.net>",
+    "Ezequiel Castellano <castellano@nii.ac.jp>",
+    "Ahmet Cetinkaya <ahmet@shibaura-it.ac.jp>",
+    "Paolo Arcaini <arcaini@nii.ac.jp>",
+]
+readme = "README.md"
+homepage = "https://github.com/ERATOMMSD/frenetic"
+repository = "https://github.com/ERATOMMSD/frenetic"
+documentation = "https://github.com/ERATOMMSD/frenetic"
+keywords = ["frenetic", "search-based road generation"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Typing :: Typed"
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/ERATOMMSD/frenetic/issues"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "*"
+numpy = "*"
+pandas = "*"
+bezier = "*"
+matplotlib = "*"
+scipy = "*"
+shapely = "*"
+
+# Tests
+pytest = {version = "*", optional = true }
+
+[tool.poetry.extras]
+test = ["pytest"]
