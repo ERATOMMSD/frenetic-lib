@@ -1,9 +1,9 @@
 import pytest
+
 from frenetic.stopcriteria.counter import CountingStop
 
 
 class TestCountingStop(object):
-
     def test_counter_complete(self):
         n_random = 5
         n_total = 10
@@ -19,7 +19,7 @@ class TestCountingStop(object):
             stop.execute_test(None)
 
         # execute until it's over
-        for _ in range(n_total-n_random):
+        for _ in range(n_total - n_random):
             assert not stop.is_random_phase
             assert not stop.is_over
             stop.execute_test(None)
@@ -29,7 +29,6 @@ class TestCountingStop(object):
             assert not stop.is_random_phase
             assert stop.is_over
             stop.execute_test(None)
-
 
     @pytest.mark.parametrize("exec_count", [None, 0, 1, 4])
     def test_is_over_returns_False(self, exec_count):
@@ -45,7 +44,6 @@ class TestCountingStop(object):
             stop.exec_count = exec_count
         assert stop.is_over
 
-
     @pytest.mark.parametrize("exec_count", [None, 0, 1, 4])
     def test_is_random_phase_returns_False(self, exec_count):
         stop = CountingStop(n_total=5, n_random=5)
@@ -60,7 +58,7 @@ class TestCountingStop(object):
             stop.exec_count = exec_count
         assert not stop.is_random_phase
 
-    @pytest.mark.parametrize("exec_count,expected", [(0, 1), (1,2), (10, 11)])
+    @pytest.mark.parametrize("exec_count,expected", [(0, 1), (1, 2), (10, 11)])
     def test_execute_test(self, exec_count, expected):
         stop = CountingStop(n_total=5, n_random=5)
         if exec_count is not None:

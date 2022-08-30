@@ -2,12 +2,20 @@ import pytest
 
 from frenetic.core.core import FreneticCore
 from frenetic.core.mutation.crossovers.crossovers import Crossover
-from frenetic.core.mutation.exploiters.exploiters import SingleVariableExploiter, FirstVariableExploiter
+from frenetic.core.mutation.exploiters.exploiters import (
+    FirstVariableExploiter,
+    SingleVariableExploiter,
+)
 from frenetic.core.mutation.mutators.mutations import FreneticMutator
 from frenetic.core.objective import MaxObjective
 from frenetic.executors.bicycle.bicycleexecutor import BicycleExecutor
 from frenetic.frenetic import Frenetic
-from frenetic.representations import kappa_generator, bezier_generator, cartesian_generator, theta_generator
+from frenetic.representations import (
+    bezier_generator,
+    cartesian_generator,
+    kappa_generator,
+    theta_generator,
+)
 from frenetic.stopcriteria.counter import CountingStop
 
 
@@ -18,20 +26,22 @@ def objective():
 
 def get_frenetic(representation):
     objective = MaxObjective(feature="distance_from_center", per_simulation_aggregator="max")
-    core = FreneticCore(representation=representation,
-                        objective=objective,
-                        mutator = FreneticMutator(representation),
-                        exploiter = SingleVariableExploiter(),
-                        crossover = Crossover(size=20, frequency=30)
-                        )
+    core = FreneticCore(
+        representation=representation,
+        objective=objective,
+        mutator=FreneticMutator(representation),
+        exploiter=SingleVariableExploiter(),
+        crossover=Crossover(size=20, frequency=30),
+    )
 
-    frenetic = Frenetic(core,
-                        executor=BicycleExecutor(
-                            representation=representation,
-                            objective=objective,
-                        ),
-                        stop_criterion=CountingStop(n_random=50, n_total=200)
-                        )
+    frenetic = Frenetic(
+        core,
+        executor=BicycleExecutor(
+            representation=representation,
+            objective=objective,
+        ),
+        stop_criterion=CountingStop(n_random=50, n_total=200),
+    )
     return frenetic
 
 

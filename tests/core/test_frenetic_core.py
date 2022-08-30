@@ -10,16 +10,15 @@ from frenetic.executors.abstract_executor import Outcome
 
 
 class TestFreneticCore_AskTell(object):
-
     def test_ask_random(self):
-        test_value = [1,2,3]
+        test_value = [1, 2, 3]
         representation = MagicMock(name="representation")
         representation.generate.return_value = test_value
         core = FreneticCore(representation=representation, objective=None)
         test = core.ask_random()
 
         assert representation.generate.called
-        assert test["test"] == [1,2,3]
+        assert test["test"] == [1, 2, 3]
         assert test["generation"] == 0
         assert test["visited"] == 0
         assert test["method"] == "random"
@@ -28,7 +27,7 @@ class TestFreneticCore_AskTell(object):
         core = FreneticCore(representation=None, objective=None)
         core.get_mutated_tests = MagicMock(name="get_mutated_tests", return_value=[])
 
-        random_test = dict(test=[1,2,3], method='random', visited=0, generation=0)
+        random_test = dict(test=[1, 2, 3], method="random", visited=0, generation=0)
         core.ask_random = MagicMock(name="ask_random", return_value=random_test)
 
         core.get_crossover_tests = MagicMock(name="get_crossover_tests")
@@ -44,7 +43,7 @@ class TestFreneticCore_AskTell(object):
     def test_ask__has_mutated_tests__no_call_to_ask_random(self):
         core = FreneticCore(representation=None, objective=None)
 
-        tests = [dict(test=[1,2,3]), dict(test=(11,12,13))]
+        tests = [dict(test=[1, 2, 3]), dict(test=(11, 12, 13))]
         core.get_mutated_tests = MagicMock(name="get_mutated_tests", return_value=tests)
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests")
@@ -52,7 +51,6 @@ class TestFreneticCore_AskTell(object):
         test_generator = core.ask()
         test1 = next(test_generator)
         test2 = next(test_generator)
-
 
         assert core.get_mutated_tests.call_count == 1
         assert not core.ask_random.called
@@ -64,7 +62,7 @@ class TestFreneticCore_AskTell(object):
     def test_ask__has_mutated_tests__breaks_mutated_after_fail(self):
         core = FreneticCore(representation=None, objective=None)
 
-        tests = [dict(test=[1,2,3], outcome=Outcome.PASS), dict(test=(11,12,13), outcome=Outcome.FAIL)]
+        tests = [dict(test=[1, 2, 3], outcome=Outcome.PASS), dict(test=(11, 12, 13), outcome=Outcome.FAIL)]
         core.get_mutated_tests = MagicMock(name="get_mutated_tests", return_value=tests)
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests", return_value=["CROSSOVER_TEST"])
@@ -85,7 +83,7 @@ class TestFreneticCore_AskTell(object):
     def test_ask__has_mutated_tests_and_crossover_tests__no_call_to_ask_random(self):
         core = FreneticCore(representation=None, objective=None)
 
-        tests = [dict(test=[1,2,3]), dict(test=(11,12,13))]
+        tests = [dict(test=[1, 2, 3]), dict(test=(11, 12, 13))]
         core.get_mutated_tests = MagicMock(name="get_mutated_tests", return_value=[tests[0]])
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests", return_value=[tests[1]])
@@ -124,14 +122,17 @@ class TestFreneticCore_AskTell(object):
 
 @pytest.fixture
 def core():
-    return FreneticCore(representation=None,
-                        objective=MaxObjective("acceleration", per_simulation_aggregator="max"),
-                        mutator=FreneticMutator(None))
+    return FreneticCore(
+        representation=None,
+        objective=MaxObjective("acceleration", per_simulation_aggregator="max"),
+        mutator=FreneticMutator(None),
+    )
+
 
 DUMMY_TEST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
-class TestFreneticCore_Mutation(object):
 
+class TestFreneticCore_Mutation(object):
     def test_get_best_parent(self, core):
         core.min_length_to_mutate = 3
         records = [
@@ -158,10 +159,38 @@ class TestFreneticCore_Mutation(object):
     def test_get_best_parent_all_too_short(self, core):
         core.mutator.min_length_to_mutate = 10
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+            {
+                "acceleration": 0.15,
+                "break": 0.0,
+                "velocity": 22,
+                "outcome": Outcome.PASS,
+                "visited": 0,
+                "test": [1, 2, 3, 4, 5],
+            },
+            {
+                "acceleration": 0.14,
+                "break": 0.0,
+                "velocity": 23,
+                "outcome": Outcome.FAIL,
+                "visited": 0,
+                "test": [1, 2, 3, 4, 5],
+            },
+            {
+                "acceleration": 0.14,
+                "break": 0.0,
+                "velocity": 25,
+                "outcome": Outcome.FAIL,
+                "visited": 0,
+                "test": [1, 2, 3, 4, 5],
+            },
+            {
+                "acceleration": 0.15,
+                "break": 0.0,
+                "velocity": 20,
+                "outcome": Outcome.PASS,
+                "visited": 0,
+                "test": [1, 2, 3, 4, 5],
+            },
         ]
         for rec in records:
             core.tell(rec)
@@ -171,10 +200,38 @@ class TestFreneticCore_Mutation(object):
     def test_get_best_parent_best_too_short(self, core):
         core.mutator.min_length_to_mutate = 7
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST[:8]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST[:9]},
-            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST[:11]},
-            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST[:8]},
+            {
+                "acceleration": 0.15,
+                "break": 0.0,
+                "velocity": 22,
+                "outcome": Outcome.PASS,
+                "visited": 0,
+                "test": DUMMY_TEST[:8],
+            },
+            {
+                "acceleration": 0.14,
+                "break": 0.0,
+                "velocity": 23,
+                "outcome": Outcome.FAIL,
+                "visited": 0,
+                "test": DUMMY_TEST[:9],
+            },
+            {
+                "acceleration": 0.13,
+                "break": 0.0,
+                "velocity": 25,
+                "outcome": Outcome.FAIL,
+                "visited": 0,
+                "test": DUMMY_TEST[:11],
+            },
+            {
+                "acceleration": 0.15,
+                "break": 0.0,
+                "velocity": 20,
+                "outcome": Outcome.PASS,
+                "visited": 0,
+                "test": DUMMY_TEST[:8],
+            },
         ]
         for rec in records:
             core.tell(rec)
@@ -196,9 +253,9 @@ class TestFreneticCore_Mutation(object):
         assert core._get_best_mutation_parent() is None
 
     def test_get_mutated_tests__no_parent_no_tests(self):
-        core = FreneticCore(representation=None, objective=None,
-                            mutator=MagicMock(name="mutator"),
-                            exploiter=MagicMock(name="exploiter"))
+        core = FreneticCore(
+            representation=None, objective=None, mutator=MagicMock(name="mutator"), exploiter=MagicMock(name="exploiter")
+        )
         core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=None)
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
@@ -207,18 +264,17 @@ class TestFreneticCore_Mutation(object):
         assert not core.exploiter.called
         assert not core._perform_modifications.called
 
-
     def test_get_mutated_tests__PASS_calls_mutator(self):
-        core = FreneticCore(representation=None, objective=None,
-                            mutator=MagicMock(name="mutator"),
-                            exploiter=MagicMock(name="exploiter"))
+        core = FreneticCore(
+            representation=None, objective=None, mutator=MagicMock(name="mutator"), exploiter=MagicMock(name="exploiter")
+        )
         core.mutator.get_all.return_value = []
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-            ]:
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+        ]:
             core.tell(rec)
 
         core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[3])
@@ -231,16 +287,16 @@ class TestFreneticCore_Mutation(object):
         assert core._perform_modifications.called
 
     def test_get_mutated_tests__FAIL_calls_exploiter(self):
-        core = FreneticCore(representation=None, objective=None,
-                            mutator=MagicMock(name="mutator"),
-                            exploiter=MagicMock(name="exploiter"))
+        core = FreneticCore(
+            representation=None, objective=None, mutator=MagicMock(name="mutator"), exploiter=MagicMock(name="exploiter")
+        )
         core.exploiter.get_all.return_value = []
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-            ]:
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+        ]:
             core.tell(rec)
 
         core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[2])
@@ -254,16 +310,16 @@ class TestFreneticCore_Mutation(object):
 
         # assert that we added stop_production kwarg!
         assert "stop_reproduction" in core._perform_modifications.call_args.kwargs
-        assert core._perform_modifications.call_args.kwargs["stop_reproduction"] == True
+        assert core._perform_modifications.call_args.kwargs["stop_reproduction"]
 
     def test_get_mutated_tests__FAIL_no_exploiter(self):
         core = FreneticCore(representation=None, objective=None)
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-            ]:
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+        ]:
             core.tell(rec)
 
         core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[2])
@@ -276,11 +332,11 @@ class TestFreneticCore_Mutation(object):
     def test_get_mutated_tests__PASS_no_mutator(self):
         core = FreneticCore(representation=None, objective=None)
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-            ]:
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+        ]:
             core.tell(rec)
 
         core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[3])
@@ -291,9 +347,7 @@ class TestFreneticCore_Mutation(object):
         assert not core._perform_modifications.called
 
 
-
 class TestFreneticCore_Crossover(object):
-
     def test_get_crossover_tests__no_crossover(self):
         core = FreneticCore(representation=None, objective=None, crossover=None)
         core._select_crossover_candidates = MagicMock(name="_select_crossover_candidates")
@@ -311,25 +365,28 @@ class TestFreneticCore_Crossover(object):
 
     def test_get_crossover_tests__no_generated_children(self):
         core = FreneticCore(representation=None, objective=None, crossover=MagicMock(name="crossover"))
-        core._select_crossover_candidates = MagicMock(name="_select_crossover_candidates", return_value=[1,2,3])  # just a non-empty list
+        core._select_crossover_candidates = MagicMock(
+            name="_select_crossover_candidates", return_value=[1, 2, 3]
+        )  # just a non-empty list
         core.crossover.generate.return_value = []  # return empty list
 
         assert core.get_crossover_tests() == []
         assert core._select_crossover_candidates.called
         assert core.crossover.generate.called
 
-
     def test_get_crossover_tests__with_generated_children(self):
         core = FreneticCore(representation=None, objective=None, crossover=MagicMock(name="crossover"))
-        core._select_crossover_candidates = MagicMock(name="_select_crossover_candidates", return_value=[1,2,3])  # just a non-empty list
+        core._select_crossover_candidates = MagicMock(
+            name="_select_crossover_candidates", return_value=[1, 2, 3]
+        )  # just a non-empty list
 
         #  fill df
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
-            ]:
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+        ]:
             core.tell(rec)
 
         # create a dummy child with parent-info
@@ -337,7 +394,6 @@ class TestFreneticCore_Crossover(object):
         method = "test method"
         info = dict(parent_1_index=1, parent_2_index=3)
         core.crossover.generate.return_value = [(test, method, info)]  # return  empty list
-
 
         assert core.get_crossover_tests() == [dict(test=test, method=method, **info)]
 
@@ -348,7 +404,4 @@ class TestFreneticCore_Crossover(object):
         assert core._select_crossover_candidates.called
         assert core.crossover.generate.called
 
-
     # TODO: Test _select_crossover_candidates
-
-
