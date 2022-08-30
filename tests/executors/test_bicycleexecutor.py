@@ -1,10 +1,13 @@
 from unittest.mock import MagicMock
 import pytest
 import numpy as np
+from shapely import geometry
 
 from frenetic.core.objective import MaxObjective
 from frenetic.executors.abstract_executor import Outcome
-from frenetic.executors.bicycleexecutor.bicycleexecutor import BicycleExecutor
+from frenetic.executors.bicycle.bicycleexecutor import BicycleExecutor
+from frenetic.representations import cartesian_generator
+from frenetic.utils import geometry_utils
 
 test = [(0,0), (0,50), (50,50), (75,100), (100, 100)]
 
@@ -16,14 +19,17 @@ def centerline():
 
 @pytest.fixture
 def bic_executor():
-    return BicycleExecutor(per_simulation_aggregator="std",
-                               representation=None,
-                               objective=MaxObjective("throttle_cmd"),
-                               normalizer=None)
+    return BicycleExecutor(representation=cartesian_generator.CatmullRomGenerator(control_nodes=30, variation=5),
+                           objective=MaxObjective(
+                               "distance_from_center",
+                               per_simulation_aggregator="max"
+                           ),
+                           normalizer=None)
 
-class TestAutonomooseExecutor(object):
+class TestBicycleExecutor(object):
 
-    def test_execute(self, anm_executor):
-        anm_executor.run_scenario = MagicMock(name="mutator", return_value=None)
-        result_dict = anm_executor._execute(test)
-        assert result_dict["outcome"] == Outcome.ERROR
+    def test_dummy(self, bic_executor, centerline):
+        result_dict = bic_executor._execute(test=list(centerline.coords))
+        pass
+
+

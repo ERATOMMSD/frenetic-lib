@@ -1,12 +1,15 @@
 import abc
+from typing import Union
+
 import pandas as pd
 
 
 class AbstractObjective(abc.ABC):
 
-    def __init__(self, feature, threshold=None):
+    def __init__(self, feature, per_simulation_aggregator: Union[callable, str, list, dict], threshold=None):
         self.feature = feature
         self.threshold = threshold
+        self.aggregator = per_simulation_aggregator.strip()
 
         self.minimize = True
 
@@ -24,8 +27,8 @@ class AbstractObjective(abc.ABC):
 
 class MaxObjective(AbstractObjective):
 
-    def __init__(self, feature, threshold=None):
-        super().__init__(feature, threshold)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.minimize = False
 
     def filter_by_threshold(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -36,8 +39,8 @@ class MaxObjective(AbstractObjective):
 
 class MinObjective(AbstractObjective):
 
-    def __init__(self, feature, threshold=None):
-        super().__init__(feature, threshold)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.minimize = True
 
     def filter_by_threshold(self, df: pd.DataFrame) -> pd.DataFrame:

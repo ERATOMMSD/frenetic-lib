@@ -1,5 +1,5 @@
-from roadsearch.utils.catmull import ControlNodesGenerator
-from roadsearch.generators.representations.road_generator import RoadGenerator
+from frenetic.utils.catmull import ControlNodesGenerator
+from frenetic.representations.abstract_generator import RoadGenerator
 import numpy as np
 import bezier
 
@@ -27,7 +27,7 @@ class BezierGenerator(RoadGenerator):
         super().__init__(length=control_nodes, variation=variation)
 
     def generate(self):
-        control_nodes = [(x, y) for (x, y, z, d) in self.generator.generate_key_control_nodes(self.get_length())]
+        control_nodes = self.generator.generate_key_control_nodes(self.get_length())
         deltas_control_nodes = points_to_deltas(control_nodes)
         return deltas_control_nodes
 

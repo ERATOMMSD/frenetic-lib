@@ -7,8 +7,6 @@ from frenetic.representations.abstract_generator import RoadGenerator
 from frenetic.core.objective import AbstractObjective
 
 import logging
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,9 +30,7 @@ class FreneticCore(object):
         self._warn_if_none(exploiter, "exploiter")
 
         # Only considering tests with a min_oob_distance < threshold for mutation (2.0 is the max_value)
-
-        self.min_length_to_mutate = 5
-        self.crossover_max_visits = 10
+        self.crossover_max_visits = 10  #
 
         self.dynamic_threshold = dynamic_threshold
 
@@ -50,6 +46,7 @@ class FreneticCore(object):
         if self.df is None:
             self.df = pd.DataFrame([record])
         else:
+            # self.df = self.df.append(record, ignore_index=True)
             self.df = pd.concat([self.df, pd.DataFrame([record])], ignore_index=True)
 
     def ask(self) -> Iterator[dict]:
@@ -61,7 +58,12 @@ class FreneticCore(object):
                 logger.debug("No mutations. Generating a random test.")
                 yield self.ask_random()
 
-            yield from mutated_tests
+            for idx, test in enumerate(mutated_tests):
+                # stop mutating if one of the mutants already produced a failure
+                if idx > 0 and "outcome" in mutated_tests[idx-1] and mutated_tests[idx-1]["outcome"] == Outcome.FAIL:
+                    break  # break on first fail
+                else:
+                    yield test
 
             # then we crossover
             crossover_tests = self.get_crossover_tests()
@@ -106,10 +108,12 @@ class FreneticCore(object):
         test_info = self.get_parent_info(parent.name)
         test_info["visited"] = 1 if stop_reproduction else 0
 
-        modified_tests = [dict(test=function(parent.test), method=name, **test_info) for name, function in functions]
-
-        # TODO: There's stuff in here that I don't understand. Why is suggestions a dict?
-        #   Why do we store standard in "parameter"?
+        modified_tests = []
+        for name, function in functions:
+            try:
+                modified_tests.append(dict(test=function(parent.test), method=name, **test_info))
+            except:
+                logger.error(f"Error during modification of test {test_info} during function {name}", exc_info=True)
 
         return modified_tests
 
@@ -152,7 +156,8 @@ class FreneticCore(object):
 
         # we take the best parent that hasn't been visited yet, whose feature is below/above the threshold
         selection = self._select_by_maxvisits_and_threshold(max_visits=0)
-        selection = selection[selection.test.apply(len) >= self.min_length_to_mutate]
+        if hasattr(self.mutator, "min_length"):  # filter by min_length, if needed
+            selection = selection[selection.test.apply(len) >= self.mutator.min_length]
         return self.objective.get_best(selection)
 
     def _select_by_maxvisits_and_threshold(self, max_visits=0):

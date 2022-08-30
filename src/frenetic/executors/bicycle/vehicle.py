@@ -1,6 +1,6 @@
 import numpy as np
-import carla
-import vec
+from . import carla
+from . import vec
 
 
 def pinegpi(val):

@@ -4,11 +4,10 @@
 # https://doi.org/10.1145/3368089.3409730
 
 import numpy as np
-from random import randint
-from typing import List, Tuple
-
-from shapely.geometry import Point
 import math
+
+from frenetic.utils.random import seeded_rng
+from shapely import geometry
 
 
 def catmull_rom_spline(p0, p1, p2, p3, num_points=20):
@@ -50,7 +49,7 @@ def catmull_rom_spline(p0, p1, p2, p3, num_points=20):
     return c
 
 
-def catmull_rom_chain(points: List[tuple], num_spline_points=20) -> List:
+def catmull_rom_chain(points: list[tuple], num_spline_points=20) -> list:
     """Calculate Catmull-Rom for a chain of points and return the combined curve."""
     # The curve cr will contain an array of (x, y) points.
     cr = []
@@ -62,16 +61,16 @@ def catmull_rom_chain(points: List[tuple], num_spline_points=20) -> List:
     return cr
 
 
-def catmull_rom_2d(points: List[tuple], num_points=20) -> List[tuple]:
+def catmull_rom_2d(points: list[tuple], num_points=20) -> list[tuple]:
     if len(points) < 4:
-        raise ValueError("points should have at least 4 points")
+        raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     np_points_array = catmull_rom_chain(points, num_points)
     return [(p[0], p[1]) for p in np_points_array]
 
 
-def catmull_rom(points: List[tuple], num_spline_points=20) -> List[tuple]:
+def catmull_rom(points: list[tuple], num_spline_points=20) -> list[tuple]:
     if len(points) < 4:
-        raise ValueError("points should have at least 4 points")
+        raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     assert all(x[3] == points[0][3] for x in points)
     np_point_array = catmull_rom_chain([(p[0], p[1]) for p in points], num_spline_points)
     z0 = points[0][2]
@@ -79,8 +78,7 @@ def catmull_rom(points: List[tuple], num_spline_points=20) -> List[tuple]:
     return [(p[0], p[1], z0, width) for p in np_point_array]
 
 
-Tuple4F = Tuple[float, float, float, float]
-Tuple2F = Tuple[float, float]
+Tuple2F = tuple[float, float]
 
 
 class ControlNodesGenerator:
@@ -89,19 +87,19 @@ class ControlNodesGenerator:
     NUM_INITIAL_SEGMENTS_THRESHOLD = 2
     NUM_UNDO_ATTEMPTS = 20
 
-    def __init__(self, num_control_nodes=15, max_angle=None, seg_length=None,
-                 num_spline_nodes=None, initial_node=(10.0, 0.0, -28.0, 8.0)):
+    def __init__(self, num_control_nodes: int = 15, max_angle: int = None, seg_length=None,
+                 num_spline_nodes: int = None, initial_node: Tuple2F = (10.0, 0.0)):
         assert num_control_nodes > 1 and num_spline_nodes > 0
         assert 0 <= max_angle <= 360
         assert seg_length > 0
-        assert len(initial_node) == 4
+        assert len(initial_node) == 2
         self.num_control_nodes = num_control_nodes
         self.num_spline_nodes = num_spline_nodes
         self.initial_node = initial_node
         self.max_angle = max_angle
         self.seg_length = seg_length
 
-    def generate_control_nodes(self, num_control_nodes=None) -> List[Tuple4F]:
+    def generate_control_nodes(self, num_control_nodes: int = None) -> list[Tuple2F]:
         if not num_control_nodes:
             num_control_nodes = self.num_control_nodes
 
@@ -125,25 +123,24 @@ class ControlNodesGenerator:
 
     def control_nodes_to_road(self, control_nodes):
         nodes = [self.initial_node] + control_nodes
-        sample_nodes = catmull_rom(nodes, self.num_spline_nodes)
+        sample_nodes = catmull_rom_2d(nodes, self.num_spline_nodes)
         road = [(node[0], node[1]) for node in sample_nodes]
         return road
 
-    def _get_initial_point(self) -> Point:
-        return Point(self.initial_node[0], self.initial_node[1])
+    def _get_initial_point(self) -> geometry.Point:
+        return geometry.Point(self.initial_node[0], self.initial_node[1])
 
-    def _get_initial_control_node(self) -> Tuple4F:
-        x0, y0, z, width = self.initial_node
+    def _get_initial_control_node(self) -> Tuple2F:
+        x0, y0 = self.initial_node
         x, y = self._get_next_xy(x0, y0, 270)
-        return x, y, z, width
+        return x, y
 
-    def _get_next_node(self, first_node, second_node: Tuple4F, max_angle) -> Tuple4F:
+    def _get_next_node(self, first_node, second_node: Tuple2F, max_angle) -> Tuple2F:
         v = np.subtract(second_node, first_node)
         start_angle = int(np.degrees(np.arctan2(v[1], v[0])))
-        angle = randint(start_angle - max_angle, start_angle + max_angle)
-        x0, y0, z0, width0 = second_node
-        x1, y1 = self._get_next_xy(x0, y0, angle)
-        return x1, y1, z0, width0
+        angle = seeded_rng().integers(start_angle - max_angle, start_angle + max_angle + 1)
+        x0, y0 = second_node
+        return self._get_next_xy(x0, y0, angle)
 
     def _get_next_xy(self, x0: float, y0: float, angle: float) -> Tuple2F:
         angle_rad = math.radians(angle)

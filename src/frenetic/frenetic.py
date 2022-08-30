@@ -1,17 +1,19 @@
-import logging
+import matplotlib.pyplot as plt
 
 from frenetic.core.core import FreneticCore
-from frenetic.executors.abstract_executor import Executor
+from frenetic.executors.abstract_executor import AbstractExecutor
 from frenetic.stopcriteria.abstract import StopCriterion
 
+import logging
 logger = logging.getLogger(__name__)
+
 
 class Frenetic(object):
     """Main class for Frenetic-based ADS testing."""
 
     def __init__(self,
                  core: FreneticCore,
-                 executor: Executor,
+                 executor: AbstractExecutor,
                  stop_criterion: StopCriterion):
 
         self.core = core
@@ -29,7 +31,6 @@ class Frenetic(object):
             self.core.tell(result_dict)
         logger.info("--------------------------------------------")
         logger.info("Finishing Initial Random Generation Phase...")
-
 
 
         logger.info("Starting Mutation Phase...")
@@ -50,5 +51,20 @@ class Frenetic(object):
     def store_results(self, filename: str = None):
         if filename is not None:
             logger.info(f"Storing the all the experiment results in file {filename}.")
-            self.core.df.to_json(filename, indent=4)
+            self.core.df.drop(columns=["test"]).to_csv(filename) #, indent=4)
 
+    def plot(self, filename: str = None):
+        """
+        Very simple plotting facility. Creates a lineplot showing the objective feature's value for each simulation.
+        Random generations are shown in gray, the mutated values in blue.
+        """
+        feature = self.core.objective.feature
+
+        # plot random part
+        ax = self.core.df[self.core.df.method == "random"].plot(y=feature, color="gray", grid=True, ylabel=feature)
+        ax = self.core.df[self.core.df.method != "random"].plot(ax=ax, y=feature, color="blue", grid=True, ylabel=feature)
+        ax.legend(["random", "mutation"])
+        if filename:
+            plt.savefig(filename)
+        else:
+            plt.show()

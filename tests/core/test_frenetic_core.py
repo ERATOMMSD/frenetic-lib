@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from frenetic.core.core import FreneticCore
+from frenetic.core.mutation.mutators.mutations import FreneticMutator
 from frenetic.core.objective import MaxObjective
 from frenetic.executors.abstract_executor import Outcome
 
@@ -60,6 +61,27 @@ class TestFreneticCore_AskTell(object):
         assert test1 == tests[0]
         assert test2 == tests[1]
 
+    def test_ask__has_mutated_tests__breaks_mutated_after_fail(self):
+        core = FreneticCore(representation=None, objective=None)
+
+        tests = [dict(test=[1,2,3], outcome=Outcome.PASS), dict(test=(11,12,13), outcome=Outcome.FAIL)]
+        core.get_mutated_tests = MagicMock(name="get_mutated_tests", return_value=tests)
+        core.ask_random = MagicMock(name="ask_random")
+        core.get_crossover_tests = MagicMock(name="get_crossover_tests", return_value=["CROSSOVER_TEST"])
+
+        test_generator = core.ask()
+        test1 = next(test_generator)
+        test2 = next(test_generator)  # this is the FAIL one.
+        test3 = next(test_generator)
+
+        assert core.get_mutated_tests.call_count == 1
+        assert not core.ask_random.called
+        assert core.get_crossover_tests.called
+
+        assert test1 == tests[0]
+        assert test2 == tests[1]
+        assert test3 == "CROSSOVER_TEST"
+
     def test_ask__has_mutated_tests_and_crossover_tests__no_call_to_ask_random(self):
         core = FreneticCore(representation=None, objective=None)
 
@@ -78,10 +100,6 @@ class TestFreneticCore_AskTell(object):
 
         assert test1 == tests[0]
         assert test2 == tests[1]
-
-
-
-
 
     def test_tell_insert(self):
         core = FreneticCore(representation=None, objective=None)
@@ -104,36 +122,41 @@ class TestFreneticCore_AskTell(object):
         assert core._get_best_mutation_parent() is None
 
 
+@pytest.fixture
+def core():
+    return FreneticCore(representation=None,
+                        objective=MaxObjective("acceleration", per_simulation_aggregator="max"),
+                        mutator=FreneticMutator(None))
+
+DUMMY_TEST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
 class TestFreneticCore_Mutation(object):
 
-    def test_get_best_parent(self):
-        core = FreneticCore(representation=None, objective=MaxObjective("acceleration"))
+    def test_get_best_parent(self, core):
         core.min_length_to_mutate = 3
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
         ]
         for rec in records:
             core.tell(rec)
 
         assert core._get_best_mutation_parent().to_dict() == records[0]
 
-    def test_get_best_parent_two_candidates(self):
-        core = FreneticCore(representation=None, objective=MaxObjective("acceleration"))
+    def test_get_best_parent_two_candidates(self, core):
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
         ]
         for rec in records:
             core.tell(rec)
 
         assert core._get_best_mutation_parent().to_dict() == records[0]
 
-    def test_get_best_parent_all_too_short(self):
-        core = FreneticCore(representation=None, objective=MaxObjective("acceleration"))
-        core.min_length_to_mutate = 10
+    def test_get_best_parent_all_too_short(self, core):
+        core.mutator.min_length_to_mutate = 10
         records = [
             {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
             {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5]},
@@ -145,28 +168,27 @@ class TestFreneticCore_Mutation(object):
 
         assert core._get_best_mutation_parent() is None
 
-    def test_get_best_parent_best_too_short(self):
-        core = FreneticCore(representation=None, objective=MaxObjective("acceleration"))
-        core.min_length_to_mutate = 7
+    def test_get_best_parent_best_too_short(self, core):
+        core.mutator.min_length_to_mutate = 7
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST[:8]},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST[:9]},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST[:11]},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST[:8]},
         ]
         for rec in records:
             core.tell(rec)
 
         assert core._get_best_mutation_parent().to_dict() == records[2]
 
-    def test_get_best_parent_with_threshold(self):
-        core = FreneticCore(representation=None, objective=MaxObjective("acceleration", threshold=0.2))
-        core.min_length_to_mutate = 5
+    def test_get_best_parent_with_threshold(self, core):
+        core.objective.threshold = 0.2
+        core.mutator.min_length_to_mutate = 5
         records = [
-            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+            {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
         ]
         for rec in records:
             core.tell(rec)
@@ -192,10 +214,10 @@ class TestFreneticCore_Mutation(object):
                             exploiter=MagicMock(name="exploiter"))
         core.mutator.get_all.return_value = []
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
             ]:
             core.tell(rec)
 
@@ -214,10 +236,10 @@ class TestFreneticCore_Mutation(object):
                             exploiter=MagicMock(name="exploiter"))
         core.exploiter.get_all.return_value = []
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
             ]:
             core.tell(rec)
 
@@ -237,10 +259,10 @@ class TestFreneticCore_Mutation(object):
     def test_get_mutated_tests__FAIL_no_exploiter(self):
         core = FreneticCore(representation=None, objective=None)
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
             ]:
             core.tell(rec)
 
@@ -254,10 +276,10 @@ class TestFreneticCore_Mutation(object):
     def test_get_mutated_tests__PASS_no_mutator(self):
         core = FreneticCore(representation=None, objective=None)
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
             ]:
             core.tell(rec)
 
@@ -303,10 +325,10 @@ class TestFreneticCore_Crossover(object):
 
         #  fill df
         for rec in [
-                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
-                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6]},
-                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": [1, 2, 3, 4, 5, 6, 7]},
-                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": [1, 2, 3, 4, 5]},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 22, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.14, "break": 0.0, "velocity": 23, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.13, "break": 0.0, "velocity": 25, "outcome": Outcome.FAIL, "visited": 0, "test": DUMMY_TEST},
+                {"acceleration": 0.15, "break": 0.0, "velocity": 20, "outcome": Outcome.PASS, "visited": 0, "test": DUMMY_TEST},
             ]:
             core.tell(rec)
 

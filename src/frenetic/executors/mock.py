@@ -1,13 +1,13 @@
 import random
 import time
 
-from frenetic.executors.abstract_executor import Executor
+from frenetic.executors.abstract_executor import AbstractExecutor
 from frenetic.utils.random import seeded_rng
 
 import logging
 logger = logging.getLogger(__name__)
 
-class MockExecutor(Executor):
+class MockExecutor(AbstractExecutor):
     """Inspired by SBST pipeline"""
 
     def _execute(self, the_test) -> dict:

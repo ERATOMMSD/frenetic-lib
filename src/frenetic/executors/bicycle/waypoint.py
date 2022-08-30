@@ -1,4 +1,4 @@
-import vec
+from . import vec
 
 class WaypointTransform:
     def __init__(self, location):

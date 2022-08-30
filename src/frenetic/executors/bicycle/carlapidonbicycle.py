@@ -1,7 +1,8 @@
-import controller as co
 import numpy as np
-import vehicle as ve
-import waypoint
+
+from . import controller as co
+from . import vehicle as ve
+from . import waypoint
 
 
 def go_to_waypoint(vehicle, pid_controller, wp, desired_speed, dt):
@@ -33,7 +34,7 @@ def execute_carla_pid_on_bicycle(xs,
     vehicle = ve.Vehicle(px0, py0, psi0, v0)
     pid_controller = co.VehiclePIDController(vehicle, pid_gains_lat, pid_gains_long)
     waypoints = []
-    for i in range(xs.shape[0]):
+    for i in range(len(xs)):
         waypoints.append(waypoint.Waypoint(xs[i], ys[i]))
 
     go_to_waypoints(vehicle, pid_controller, waypoints, desired_speed, dt)
