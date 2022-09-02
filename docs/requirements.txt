@@ -1,5 +1,5 @@
-sphinx-autodoc-typehints
 sphinx-autoapi
+myst-parser
 
 numpy
 pandas
