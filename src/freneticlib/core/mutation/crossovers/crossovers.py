@@ -1,11 +1,13 @@
-import logging as log
+import logging
 
 import numpy as np
 
 from freneticlib.utils.random import seeded_rng
 
+logger = logging.getLogger(__name__)
 
-class Crossover:
+
+class Crossover(object):
     def __init__(self, size: int = 20, frequency: int = 50):
         # Set crossover frequency to 0 for no crossover
         self.size = size
@@ -44,7 +46,7 @@ class Crossover:
                     for child in newborns:
                         children.append((child, method, self.combine_parents_info(parent_1_info, parent_2_info)))
                 else:
-                    log.info("Discarding parents combination due to genetic similarity")
+                    logger.info("Discarding parents combination due to genetic similarity")
 
         return children
 
