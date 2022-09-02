@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 class FreneticCore(object):
     """The core module of frenetic-lib. It handles the representation"""
 
+
+    df: pd.DataFrame = None
+    """Stores the history including road, execution outcome and parent info."""
+
     def __init__(
         self,
         representation: RoadGenerator,
@@ -28,8 +32,6 @@ class FreneticCore(object):
         self.mutator = mutator
         self.exploiter = exploiter
         self.crossover = crossover
-
-        self.df = None
 
         # Warnings when operators are None
         self._warn_if_none(crossover, "crossover")

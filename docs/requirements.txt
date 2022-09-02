@@ -1,0 +1,9 @@
+sphinx-autodoc-typehints
+sphinx-autoapi
+
+numpy
+pandas
+bezier
+shapely
+scipy
+click
