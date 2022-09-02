@@ -10,12 +10,6 @@ from freneticlib.representations.abstract_generator import RoadGenerator
 logger = logging.getLogger(__name__)
 
 
-class Outcome(object):  # enum makes things complicated
-    PASS = "PASS"
-    FAIL = "FAIL"
-    ERROR = "ERROR"
-
-
 class AbstractExecutor(abc.ABC):
     def __init__(
         self,

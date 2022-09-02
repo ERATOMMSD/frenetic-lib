@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from shapely import geometry, ops
 
-from freneticlib.executors.abstract_executor import AbstractExecutor, Outcome
+from freneticlib.executors.abstract_executor import AbstractExecutor
+from freneticlib.executors.outcome import Outcome
 from freneticlib.utils import geometry_utils
 
 from . import carlapidonbicycle as cpb

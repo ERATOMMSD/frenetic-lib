@@ -6,7 +6,7 @@ import pytest
 from freneticlib.core.core import FreneticCore
 from freneticlib.core.mutation.mutators.mutations import FreneticMutator
 from freneticlib.core.objective import MaxObjective
-from freneticlib.executors.abstract_executor import Outcome
+from freneticlib.executors.outcome import Outcome
 
 
 class TestFreneticCore_AskTell(object):
