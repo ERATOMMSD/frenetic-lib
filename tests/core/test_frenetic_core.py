@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from freneticlib.core.core import FreneticCore
-from freneticlib.core.mutation.mutators.mutations import FreneticMutator
+from freneticlib.core.mutation.mutators import FreneticMutator
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.outcome import Outcome
 

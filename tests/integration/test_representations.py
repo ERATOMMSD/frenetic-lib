@@ -1,12 +1,12 @@
 import pytest
 
 from freneticlib.core.core import FreneticCore
-from freneticlib.core.mutation.crossovers.crossovers import Crossover
-from freneticlib.core.mutation.exploiters.exploiters import (
+from freneticlib.core.mutation.crossovers import Crossover
+from freneticlib.core.mutation.exploiters import (
     FirstVariableExploiter,
     SingleVariableExploiter,
 )
-from freneticlib.core.mutation.mutators.mutations import FreneticMutator
+from freneticlib.core.mutation.mutators import FreneticMutator
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
 from freneticlib.frenetic import Frenetic
