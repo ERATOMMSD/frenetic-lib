@@ -1,6 +1,6 @@
 import numpy as np
 
-from . import carla, vec
+from . import carla, util
 
 
 def pinegpi(val):
@@ -13,7 +13,7 @@ def pinegpi(val):
 class VehicleTransform:
     def __init__(self, location):
         self.location = location
-        self.forward_vector = vec.Vec(0, 0)
+        self.forward_vector = util.Vec(0, 0)
 
     def update(self, x, y, psi):
         self.location.update(x, y)
@@ -43,7 +43,7 @@ class Vehicle:
         self.ts = []
 
         self.speed = self.v
-        self.transform = VehicleTransform(vec.Vec(self.px, self.py))
+        self.transform = VehicleTransform(util.Vec(self.px, self.py))
         self.transform.set_forward_vector(self.psi)
         self.control = carla.VehicleControl()
 
