@@ -1,4 +1,4 @@
-from roadsearch.generators.normalizers.abstract_normalizer import AbstractNormalizer
+from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
 
 
 class KappaNormalizer(AbstractNormalizer):

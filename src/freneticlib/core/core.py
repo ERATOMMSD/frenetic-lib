@@ -5,13 +5,15 @@ from typing import Iterator
 import pandas as pd
 
 from freneticlib.core.objective import AbstractObjective
-from freneticlib.executors.abstract_executor import Outcome
+from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_generator import RoadGenerator
 
 logger = logging.getLogger(__name__)
 
 
 class FreneticCore(object):
+    """The core module of frenetic-lib. It handles the representation"""
+
     def __init__(
         self,
         representation: RoadGenerator,
@@ -19,7 +21,6 @@ class FreneticCore(object):
         mutator=None,
         exploiter=None,
         crossover=None,
-        dynamic_threshold=False,
     ):
         self.representation = representation
         self.objective = objective
@@ -35,10 +36,7 @@ class FreneticCore(object):
         self._warn_if_none(mutator, "mutator")
         self._warn_if_none(exploiter, "exploiter")
 
-        # Only considering tests with a min_oob_distance < threshold for mutation (2.0 is the max_value)
-        self.crossover_max_visits = 10  #
-
-        self.dynamic_threshold = dynamic_threshold
+        self.crossover_max_visits = 10
 
     def _warn_if_none(self, var, name):
         if not var:
@@ -56,7 +54,14 @@ class FreneticCore(object):
             self.df = pd.concat([self.df, pd.DataFrame([record])], ignore_index=True)
 
     def ask(self) -> Iterator[dict]:
-        """This is actually a python generator, it will produce roads as long as we ask it"""
+        """This is actually a python generator, it will produce roads as long as we ask it.
+
+        Specifically, it will first create a list of mutants based on the best known individual.
+        Then, using the history and the mutants, it will create the crossover children and yield those.
+
+        Yields:
+            dict: A dictionary containing a road and additional information of the test.
+        """
         while True:
             # First we mutate (or generate random)
             mutated_tests = self.get_mutated_tests()
@@ -80,8 +85,8 @@ class FreneticCore(object):
             #     logger.info('Entering recombination phase.')
             #     self.parents_recombination()
             #     self.executed_count = 0
-            #     if self.dynamic_threshold:
-            #         self.recalculate_threshold()
+
+            self.objective.recalculate_dynamic_threshold(self.df)
 
     def get_mutated_tests(self) -> list:
         """Returns a list of tests"""
@@ -123,40 +128,10 @@ class FreneticCore(object):
 
         return modified_tests
 
-    # def perform_modifications_original(self, functions, parent, stop_reproduction=False) -> list:
-    #     # Only considering paths with more than 10 values for mutations
-    #     # test might be empty if the parent was obtained from reversing road points
-    #     test = parent.test.item()
-    #     if test and len(test) >= self.min_length_to_mutate:
-    #         i = 0
-    #         while self.is_time_available() and i < len(functions):
-    #             name, function = functions[i]
-    #             logger.info(f'Mutation function: {name}')
-    #             modified_versions = function(test)
-    #             if isinstance(modified_versions, dict):
-    #                 suggestions = modified_versions
-    #             else:
-    #                 suggestions = {'standard': modified_versions}
-    #
-    #             outcome = None
-    #             for k, modified_test in suggestions.items():
-    #                 info = self.get_parent_info(parent.index.item())
-    #                 info['visited'] = 1 if stop_reproduction else 0
-    #                 info['parameter'] = k
-    #                 outcome = self.execute_test(modified_test, method=name, info=info)
-    #
-    #             i += 1
-    #             if outcome == 'FAIL':
-    #                 # Stop mutating this parent when one of the children already produced a failure
-    #                 break
-
-    # def mutator_defined(self, outcome):
-    #     return (outcome == 'FAIL' and self.executor is not None) or (outcome == 'PASS' and self.mutator is not None)
-
     def _get_best_mutation_parent(self) -> pd.Series:
         if self.df is None or len(self.df) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
-            return
+            return None
 
         assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
 
@@ -200,15 +175,6 @@ class FreneticCore(object):
             logger.warning("No candidates for crossover.")
             return []
 
-    # def mutate_test(self, parent):
-    #     # Applying different operators depending on the outcome
-    #     if self.exploiter and parent.outcome.item() == 'FAIL':
-    #         self.perform_modifications_original(self.exploiter.get_all(), parent, stop_reproduction=True)
-    #     elif self.mutator and parent.outcome.item() == 'PASS':
-    #         self.perform_modifications_original(self.mutator.get_all(), parent)
-    #     else:
-    #         logger.warning("No modification was applied because there is no exploiter nor mutator defined.")
-
     def _select_crossover_candidates(self) -> list:
         if len(self.df) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
@@ -233,13 +199,3 @@ class FreneticCore(object):
             candidates.append((test, self.get_parent_info(index)))
 
         return candidates
-
-    # def parents_recombination(self):
-    #     candidates = self._select_crossover_candidates()
-    #     if candidates:
-    #         children = self.crossover.generate(candidates)
-    #         while self.is_time_available() and len(children) > 0:
-    #             child, method, info = children.pop()
-    #             self.df.at[info['parent_1_index'], 'visited'] = self.df.iloc[info['parent_1_index']]['visited'] + 1
-    #             self.df.at[info['parent_2_index'], 'visited'] = self.df.iloc[info['parent_2_index']]['visited'] + 1
-    #             self.execute_test(child, method=method, info=info)

@@ -5,6 +5,7 @@ from typing import Union
 
 from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
+from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_generator import RoadGenerator
 
 logger = logging.getLogger(__name__)

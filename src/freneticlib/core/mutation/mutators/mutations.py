@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+import abc
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -7,8 +7,8 @@ from freneticlib.utils.gaussian import gaussian_alteration
 from freneticlib.utils.random import seeded_rng
 
 
-class AbstractMutator(ABC):
-    @abstractmethod
+class AbstractMutator(abc.ABC):
+    @abc.abstractmethod
     def get_all(self):
         pass
 
@@ -142,20 +142,6 @@ class ValueAlterationMutatorKappaStep(AbstractMutator):
                 modified_test.append((kappa, step))
 
         return modified_test
-
-
-class FreNNetMutator(AbstractMutator):
-    def __init__(self, model):
-        self.model = model
-
-    def get_all(self):
-        return [("freNNetic alteration", self.frennetic_alteration)]
-
-    def frennetic_alteration(self, parent_info: dict) -> Dict[str, List[float]]:
-        oob_distances = np.array(parent_info["oob_distances"])
-        road = np.array(parent_info["road"])
-        car_positions = parent_info["car_positions"]
-        return self.model.suggestions(oob_distances, road, car_positions)
 
 
 class GaussianPushMutator(ListMutator):
