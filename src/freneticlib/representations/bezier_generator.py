@@ -46,5 +46,5 @@ class BezierGenerator(RoadGenerator):
 
         return road
 
-    def get_value(self, previous):
+    def get_value(self, previous: list = None):
         raise Exception("This generator does not implement get value.")

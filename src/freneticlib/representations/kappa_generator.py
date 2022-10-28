@@ -28,7 +28,7 @@ class AbstractKappaGenerator(RoadGenerator, abc.ABC):
         self.local_bound = local_bound
         super().__init__(length, variation)
 
-    def get_kappa(self, last_kappa):
+    def get_kappa(self, last_kappa) -> float:
         return seeded_rng().uniform(
             max(-self.global_bound, last_kappa - self.local_bound), min(self.global_bound, last_kappa + self.local_bound)
         )
@@ -41,13 +41,11 @@ class FixStepKappaGenerator(AbstractKappaGenerator):
         self.step = step
         super().__init__(length=length, variation=variation, global_bound=global_bound, local_bound=local_bound)
 
-    def get_value(self, previous):
-        last_kappa = 0
-        if previous:
-            last_kappa = previous[-1]
+    def get_value(self, previous: list = None) -> float:
+        last_kappa = 0 if (previous is None or len(previous) == 0) else previous[-1]
         return self.get_kappa(last_kappa)
 
-    def to_cartesian(self, test):
+    def to_cartesian(self, test) -> list:
         ss = np.cumsum([self.step] * len(test)) - self.step
         return frenet_to_cartesian(x0=0, y0=0, theta0=1.57, ss=ss, kappas=test)
 
@@ -66,16 +64,14 @@ class KappaGenerator(AbstractKappaGenerator):
         self.high_step = high_step
         super().__init__(length=length, variation=variation, global_bound=global_bound, local_bound=local_bound)
 
-    def get_step(self):
+    def get_step(self) -> float:
         return seeded_rng().uniform(self.low_step, self.high_step)
 
-    def get_value(self, previous):
-        last_kappa = 0
-        if previous:
-            last_kappa = previous[-1][0]
+    def get_value(self, previous: list = None) -> Tuple[float,float]:
+        last_kappa = 0 if previous is None else previous[-1][0]
         return self.get_kappa(last_kappa), self.get_step()
 
-    def to_cartesian(self, test):
+    def to_cartesian(self, test: list) -> list:
         kappas, ss_deltas = zip(*test)
         ss = np.zeros(len(kappas))
         ss[1:] = np.cumsum(ss_deltas[0:-1])
