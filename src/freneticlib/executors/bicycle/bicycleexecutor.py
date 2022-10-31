@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -40,7 +41,7 @@ class BicycleExecutor(AbstractExecutor):
         self.target_speed = target_speed  # km/h
         self.dt = dt
 
-    def _execute(self, test: list) -> dict:
+    def _execute(self, test: List) -> Dict:
         cartesian = self.representation.to_cartesian(test)
 
         original_line = geometry.LineString(np.array(cartesian))

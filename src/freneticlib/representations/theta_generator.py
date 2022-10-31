@@ -1,4 +1,5 @@
 import abc
+from typing import List
 
 import numpy as np
 
@@ -28,7 +29,7 @@ class AbstractThetaGenerator(RoadGenerator, abc.ABC):
         self.delta = delta
         super().__init__(length=length, variation=variation)
 
-    def get_theta(self, previous: list = None):
+    def get_theta(self, previous: List = None):
         last_value = 0
         if previous:
             last_value = previous[-1]
@@ -43,7 +44,7 @@ class FixStepThetaGenerator(AbstractThetaGenerator):
         self.step = step
         super().__init__(length=length, variation=variation, bound=bound, delta=delta)
 
-    def get_value(self, previous: list = None):
+    def get_value(self, previous: List = None):
         return self.get_theta(previous)
 
     def to_cartesian(self, test):
@@ -68,7 +69,7 @@ class ThetaGenerator(AbstractThetaGenerator):
     def get_step(self):
         return seeded_rng().uniform(self.low_step, self.high_step)
 
-    def get_value(self, previous: list = None):
+    def get_value(self, previous: List = None):
         previous_thetas = None
         if previous:
             previous_thetas, _ = zip(*previous)

@@ -1,5 +1,5 @@
 import abc
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -42,11 +42,11 @@ class FixStepKappaGenerator(AbstractKappaGenerator):
         self.step = step
         super().__init__(length=length, variation=variation, global_bound=global_bound, local_bound=local_bound)
 
-    def get_value(self, previous: list = None) -> float:
+    def get_value(self, previous: List = None) -> float:
         last_kappa = 0 if (previous is None or len(previous) == 0) else previous[-1]
         return self.get_kappa(last_kappa)
 
-    def to_cartesian(self, test) -> list:
+    def to_cartesian(self, test) -> List:
         ss = np.cumsum([self.step] * len(test)) - self.step
         return frenet_to_cartesian(x0=0, y0=0, theta0=1.57, ss=ss, kappas=test)
 
@@ -68,11 +68,11 @@ class KappaGenerator(AbstractKappaGenerator):
     def get_step(self) -> float:
         return seeded_rng().uniform(self.low_step, self.high_step)
 
-    def get_value(self, previous: list = None) -> Tuple[float,float]:
+    def get_value(self, previous: List = None) -> Tuple[float, float]:
         last_kappa = 0 if previous is None else previous[-1][0]
         return self.get_kappa(last_kappa), self.get_step()
 
-    def to_cartesian(self, test: list) -> list:
+    def to_cartesian(self, test: List) -> List:
         kappas, ss_deltas = zip(*test)
         ss = np.zeros(len(kappas))
         ss[1:] = np.cumsum(ss_deltas[0:-1])

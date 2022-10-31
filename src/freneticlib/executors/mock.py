@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+from plistlib import Dict
 
 from freneticlib.executors.abstract_executor import AbstractExecutor
 from freneticlib.utils.random import seeded_rng
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 class MockExecutor(AbstractExecutor):
     """Inspired by SBST pipeline"""
 
-    def _execute(self, the_test) -> dict:
+    def _execute(self, the_test) -> Dict:
         test_outcome = seeded_rng().choice(["FAIL"] * 3 + ["PASS"] * 5 + ["ERROR"])
         description = "Mocked test results"
 

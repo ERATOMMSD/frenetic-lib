@@ -1,6 +1,6 @@
 import abc
 import logging
-from typing import Union
+from typing import Callable, Dict, List, Union
 
 import pandas as pd
 
@@ -15,7 +15,7 @@ class AbstractObjective(abc.ABC):
     def __init__(
         self,
         feature,
-        per_simulation_aggregator: Union[callable, str, list, dict],
+        per_simulation_aggregator: Union[Callable, str, List, Dict],
         threshold: float = None,
         dynamic_threshold_quantile: float = None,
     ):
@@ -23,7 +23,7 @@ class AbstractObjective(abc.ABC):
         Args:
             feature (str):
                 The feature that should be optimised.
-            per_simulation_aggregator (Union[callable, str, list, dict]): How to aggregate over a simulation's records.
+            per_simulation_aggregator (Union[Callable, str, List, Dict]): How to aggregate over a simulation's records.
                 (see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.aggregate.html)
             threshold (float, optional):
                 Only consider elements "better" than this. Defaults to None

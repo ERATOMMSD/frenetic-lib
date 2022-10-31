@@ -51,7 +51,7 @@ def catmull_rom_spline(p0, p1, p2, p3, num_points=20):
     return c
 
 
-def catmull_rom_chain(points: List[tuple], num_spline_points=20) -> list:
+def catmull_rom_chain(points: List[Tuple], num_spline_points=20) -> List:
     """Calculate Catmull-Rom for a chain of points and return the combined curve."""
     # The curve cr will contain an array of (x, y) points.
     cr = []
@@ -63,14 +63,14 @@ def catmull_rom_chain(points: List[tuple], num_spline_points=20) -> list:
     return cr
 
 
-def catmull_rom_2d(points: List[tuple], num_points=20) -> List[tuple]:
+def catmull_rom_2d(points: List[Tuple], num_points=20) -> List[Tuple]:
     if len(points) < 4:
         raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     np_points_array = catmull_rom_chain(points, num_points)
     return [(p[0], p[1]) for p in np_points_array]
 
 
-def catmull_rom(points: List[tuple], num_spline_points=20) -> List[tuple]:
+def catmull_rom(points: List[Tuple], num_spline_points=20) -> List[Tuple]:
     if len(points) < 4:
         raise ValueError("Need at least 4 points (elements) to calculate catmull_rom")
     assert all(x[3] == points[0][3] for x in points)

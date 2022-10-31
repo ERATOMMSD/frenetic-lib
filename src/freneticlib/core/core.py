@@ -1,6 +1,6 @@
 import ast
 import logging
-from typing import Iterator
+from typing import Dict, Iterator, List
 
 import pandas as pd
 
@@ -44,10 +44,10 @@ class FreneticCore(object):
         if not var:
             logger.warning(f"No {name} operator was chosen.")
 
-    def ask_random(self) -> dict:
+    def ask_random(self) -> Dict:
         return dict(test=self.representation.generate(), method="random", visited=0, generation=0)
 
-    def tell(self, record: dict):
+    def tell(self, record: Dict):
         logger.debug("Tell:")  # {road} -> {result}")
         if self.df is None:
             self.df = pd.DataFrame([record])
@@ -55,7 +55,7 @@ class FreneticCore(object):
             # self.df = self.df.append(record, ignore_index=True)
             self.df = pd.concat([self.df, pd.DataFrame([record])], ignore_index=True)
 
-    def ask(self) -> Iterator[dict]:
+    def ask(self) -> Iterator[Dict]:
         """This is actually a python generator, it will produce roads as long as we ask it.
 
         Specifically, it will first create a list of mutants based on the best known individual.
@@ -90,7 +90,7 @@ class FreneticCore(object):
 
             self.objective.recalculate_dynamic_threshold(self.df)
 
-    def get_mutated_tests(self) -> list:
+    def get_mutated_tests(self) -> List:
         """Returns a list of tests"""
         parent = self._get_best_mutation_parent()  # returns a row
         if parent is None:
@@ -156,7 +156,7 @@ class FreneticCore(object):
         max_visit_filter = self.df.visited <= max_visits
         return self.objective.filter_by_threshold(self.df[pass_fail_filter & max_visit_filter])
 
-    def get_parent_info(self, p_index) -> dict:
+    def get_parent_info(self, p_index) -> Dict:
         parent = self.df.iloc[p_index]
         return {
             "parent_1_index": p_index,
@@ -165,7 +165,7 @@ class FreneticCore(object):
             "generation": parent["generation"] + 1,
         }
 
-    def get_crossover_tests(self) -> list:
+    def get_crossover_tests(self) -> List:
         if self.crossover is None:
             logger.info("No crossover defined. Skipping.")
             return []
@@ -183,7 +183,7 @@ class FreneticCore(object):
             child_tests.append(dict(test=child, method=method, **info))
         return child_tests
 
-    def _select_crossover_candidates(self) -> list:
+    def _select_crossover_candidates(self) -> List:
         if len(self.df) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
             return []

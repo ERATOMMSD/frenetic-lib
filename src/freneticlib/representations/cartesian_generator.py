@@ -1,3 +1,5 @@
+from typing import List
+
 from freneticlib.utils import catmull
 
 from .abstract_generator import RoadGenerator
@@ -41,6 +43,6 @@ class CatmullRomGenerator(RoadGenerator):
         road = self.generator.control_nodes_to_road(control_nodes)
         return road
 
-    def get_value(self, previous: list = None):
+    def get_value(self, previous: List = None):
         return self.generator._get_next_node(previous[-2], previous[-1], self.generator._get_next_max_angle(len(previous) - 2))
         # raise Exception("This generator does not implement get value.")

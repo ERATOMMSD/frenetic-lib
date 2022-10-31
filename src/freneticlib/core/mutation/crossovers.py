@@ -1,6 +1,6 @@
 import abc
 import logging
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 
@@ -20,7 +20,7 @@ def calculate_test_similarity(parent_1, parent_2) -> float:
     return 0.0 if min_len == 0 else same_count / min_len
 
 
-def combine_parents_info(parent_1_info, parent_2_info) -> dict:
+def combine_parents_info(parent_1_info, parent_2_info) -> Dict:
     info = {}
     info.update(parent_1_info)
     for k, v in parent_2_info.items():
@@ -71,31 +71,27 @@ class SinglePointCrossover(AbstractCrossoverOperator):
 
 
 class AbstractCrossover(abc.ABC):
-
     def __init__(self, operators: List[AbstractCrossoverOperator] = None):
         self.operators = operators
 
     @abc.abstractmethod
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: list) -> list:
+    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: List) -> List:
         pass
 
-    def is_applicable(self, parent_candidates: list) -> bool:
+    def is_applicable(self, parent_candidates: List) -> bool:
         return True
 
 
 class ChooseRandomCrossoverOperator(AbstractCrossover):
     def __init__(self, operators: List[AbstractCrossoverOperator] = None, size: int = 20, similarity_threshold: float = 0.95):
-        operators = operators or [  # default exploiters
-            ChromosomeCrossover(),
-            SinglePointCrossover()
-        ]
+        operators = operators or [ChromosomeCrossover(), SinglePointCrossover()]  # default exploiters
         super().__init__(operators)
         self.similarity_threshold = similarity_threshold
 
         self.size = size
         self.min_number_candidates_for_crossover = 4
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: list) -> list:
+    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: List) -> List:
         """
         Args:
             candidates (list): A list of candidate tests to be chosen as parents

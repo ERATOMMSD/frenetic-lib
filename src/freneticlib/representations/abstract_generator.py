@@ -1,7 +1,5 @@
 import abc
 
-import numpy as np
-
 from freneticlib.utils.random import seeded_rng
 
 

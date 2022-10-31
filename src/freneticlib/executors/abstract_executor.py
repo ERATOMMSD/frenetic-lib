@@ -1,7 +1,7 @@
 import abc
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Dict, Union
 
 from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
@@ -31,7 +31,7 @@ class AbstractExecutor(abc.ABC):
 
         self.exec_counter = -1  # counts how many executions have been
 
-    def execute_test(self, test_dict: dict) -> dict:
+    def execute_test(self, test_dict: Dict) -> Dict:
         logger.debug(f"Execution of a test #{self.exec_counter} (generation method: {test_dict['method']})")
         self.exec_counter += 1  # counts how many executions have been
 
@@ -50,5 +50,5 @@ class AbstractExecutor(abc.ABC):
         return test_dict
 
     @abc.abstractmethod
-    def _execute(self, test) -> dict:
+    def _execute(self, test) -> Dict:
         pass

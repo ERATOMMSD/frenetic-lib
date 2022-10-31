@@ -1,15 +1,16 @@
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
-from .abstract_operators import AbstractMutator, AbstractMutationOperator
 from freneticlib.representations import abstract_generator
 from freneticlib.utils.random import seeded_rng
 
+from .abstract_operators import AbstractMutationOperator, AbstractMutator
 
-def get_test(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
+
+def get_test(parent_info: Union[Dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
     """Return the (numeric) test from a parent_info dict."""
-    if isinstance(parent_info, dict):
+    if isinstance(parent_info, Dict):
         test = parent_info["test"]
     else:
         test = parent_info
@@ -17,7 +18,6 @@ def get_test(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[f
 
 
 class RemoveFront(AbstractMutationOperator):
-
     def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
         self.remove_at_least = remove_at_least
         self.remove_at_most = remove_at_most
@@ -25,14 +25,13 @@ class RemoveFront(AbstractMutationOperator):
 
     def __call__(self, generator: abstract_generator.RoadGenerator, test):
         assert self.is_applicable(test)
-        return test[seeded_rng().integers(self.remove_at_least, self.remove_at_most):]
+        return test[seeded_rng().integers(self.remove_at_least, self.remove_at_most) :]
 
     def is_applicable(self, test) -> bool:
         return len(test) >= self.min_length_for_operator
 
 
 class RemoveBack(AbstractMutationOperator):
-
     def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
         self.remove_at_least = remove_at_least
         self.remove_at_most = remove_at_most
@@ -47,7 +46,6 @@ class RemoveBack(AbstractMutationOperator):
 
 
 class RemoveRandom(AbstractMutationOperator):
-
     def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
         self.remove_at_least = remove_at_least
         self.remove_at_most = remove_at_most
@@ -70,7 +68,6 @@ class RemoveRandom(AbstractMutationOperator):
 
 
 class AddBack(AbstractMutationOperator):
-
     def __init__(self, add_at_least: int = 1, add_at_most: int = 5):
         self.add_at_least = add_at_least
         self.add_at_most = add_at_most
@@ -83,14 +80,15 @@ class AddBack(AbstractMutationOperator):
 
 
 class ReplaceRandom(AbstractMutationOperator):
-
     def __init__(self, replace_at_least: int = 1, replace_at_most: int = 5):
         self.replace_at_least = replace_at_least
         self.replace_at_most = replace_at_most
 
     def __call__(self, generator: abstract_generator.RoadGenerator, test):
         # Randomly replace values
-        indices = seeded_rng().choice(len(test), seeded_rng().integers(self.replace_at_least, self.replace_at_most), replace=False)
+        indices = seeded_rng().choice(
+            len(test), seeded_rng().integers(self.replace_at_least, self.replace_at_most), replace=False
+        )
         modified_test = test[:]
 
         for i in sorted(indices):
@@ -99,7 +97,6 @@ class ReplaceRandom(AbstractMutationOperator):
 
 
 class AlterValues(AbstractMutationOperator):
-
     def __init__(self, mutation_factor_low: float = 0.9, mutation_factor_high: float = 1.1, mutation_chance: float = 0.1):
         self.mutation_factor_low = mutation_factor_low
         self.mutation_factor_high = mutation_factor_high
@@ -127,14 +124,13 @@ class AlterValues(AbstractMutationOperator):
 
 
 class KappaStepAlterValues(AlterValues):
-
     def __call__(self, generator: abstract_generator.RoadGenerator, test):
         test = np.array(test)  # force convert test to numpy array
         mutated = test.copy()
 
         # we need to ignore the last step, because it is unused!
-        all_except_last_mask = np.ones(shape=mutated.shape, dtype = np.bool)
-        all_except_last_mask[-1,1] = False
+        all_except_last_mask = np.ones(shape=mutated.shape, dtype=np.bool)
+        all_except_last_mask[-1, 1] = False
 
         while (mutated == test)[all_except_last_mask].all():  # until we have a mutation, but not in the place of mask
             mutated = self._alter_once(test)
@@ -142,9 +138,7 @@ class KappaStepAlterValues(AlterValues):
         return mutated.tolist()
 
 
-
 class FreneticMutator(AbstractMutator):
-
     def __init__(self, operators: list[AbstractMutationOperator] = None):
         operators = operators or [  # default mutators
             RemoveFront(),
@@ -152,8 +146,6 @@ class FreneticMutator(AbstractMutator):
             RemoveRandom(),
             AddBack(),
             ReplaceRandom(),
-            AlterValues()
+            AlterValues(),
         ]
         super().__init__(operators)
-
-

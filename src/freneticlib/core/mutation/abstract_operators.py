@@ -4,7 +4,6 @@ from freneticlib.representations import abstract_generator
 
 
 class AbstractMutationOperator(abc.ABC):
-
     @abc.abstractmethod
     def __call__(self, generator: abstract_generator.RoadGenerator, test):
         pass
@@ -17,7 +16,6 @@ class AbstractMutationOperator(abc.ABC):
 
 
 class AbstractMutator(abc.ABC):
-
     def __init__(self, operators: list[callable]):
         self.operators = operators
 

@@ -1,3 +1,5 @@
+from typing import List
+
 import bezier
 import numpy as np
 
@@ -46,5 +48,5 @@ class BezierGenerator(RoadGenerator):
 
         return road
 
-    def get_value(self, previous: list = None):
+    def get_value(self, previous: List = None):
         raise Exception("This generator does not implement get value.")

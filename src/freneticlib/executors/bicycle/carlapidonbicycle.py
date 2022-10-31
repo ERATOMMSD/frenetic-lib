@@ -1,8 +1,8 @@
 import numpy as np
 
 from . import controller as co
-from . import vehicle as ve
 from . import util
+from . import vehicle as ve
 
 
 def go_to_waypoint(vehicle, pid_controller, wp, desired_speed, dt):

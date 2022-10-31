@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pytest
 
@@ -7,7 +9,7 @@ from freneticlib.representations.abstract_generator import RoadGenerator
 class RoadGenerator_TestImpl(RoadGenerator):
     """Implements Abstract Generator, so we can test it"""
 
-    def get_value(self, previous: list = None) -> int:
+    def get_value(self, previous: List = None) -> int:
         return 0
 
     def to_cartesian(self, test):
