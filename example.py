@@ -1,8 +1,7 @@
 import logging
 
 from freneticlib.core.core import FreneticCore
-from freneticlib.core.mutation.crossovers import Crossover
-from freneticlib.core.mutation import exploiters
+from freneticlib.core.mutation import exploiters, crossovers
 from freneticlib.core.mutation.mutators import FreneticMutator
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
@@ -30,9 +29,13 @@ def run_example():
     core = FreneticCore(
         representation=representation,
         objective=objective,
-        mutator=FreneticMutator(representation),
-        exploiter=exploiters.FirstVariableExploiter(),
-        crossover=Crossover(size=20, frequency=30),
+        mutator=FreneticMutator(),
+        exploiter=exploiters.Exploiter([
+            exploiters.ReverseTest(),
+            exploiters.SplitAndSwap(),
+            exploiters.KappaFlipSign()
+        ]),
+        crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )
 
     # Define the Frenetic executor and the stop-criterion.

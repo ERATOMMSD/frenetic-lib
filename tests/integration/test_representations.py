@@ -1,12 +1,8 @@
 import pytest
 
 from freneticlib.core.core import FreneticCore
-from freneticlib.core.mutation.crossovers import Crossover
-from freneticlib.core.mutation.exploiters import (
-    FirstVariableExploiter,
-    SingleVariableExploiter,
-)
-from freneticlib.core.mutation.mutators import FreneticMutator
+from freneticlib.core.mutation import exploiters, mutators, crossovers
+
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
 from freneticlib.frenetic import Frenetic
@@ -29,9 +25,9 @@ def get_frenetic(representation):
     core = FreneticCore(
         representation=representation,
         objective=objective,
-        mutator=FreneticMutator(representation),
-        exploiter=SingleVariableExploiter(),
-        crossover=Crossover(size=20, frequency=30),
+        mutator=mutators.FreneticMutator(),
+        exploiter=exploiters.Exploiter(),
+        crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )
 
     frenetic = Frenetic(
@@ -102,7 +98,7 @@ class Test_RepresentationIntegration(object):
         representation = cartesian_generator.CatmullRomGenerator(control_nodes=30, variation=5)
 
         frenetic = get_frenetic(representation)
-        frenetic.core.exploiter = FirstVariableExploiter()
+        frenetic.core.exploiter = exploiters.Exploiter()
         frenetic.start()
 
         df = frenetic.core.df

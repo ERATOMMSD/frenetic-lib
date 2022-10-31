@@ -282,8 +282,7 @@ class TestFreneticCore_Mutation(object):
 
         core.get_mutated_tests()
 
-        assert core.mutator.get_all.called
-        assert not core.exploiter.get_all.called
+        assert core._perform_modifications.call_args.args[0]._extract_mock_name() == "mutator"
         assert core._perform_modifications.called
 
     def test_get_mutated_tests__FAIL_calls_exploiter(self):
@@ -304,9 +303,8 @@ class TestFreneticCore_Mutation(object):
 
         core.get_mutated_tests()
 
-        assert not core.mutator.get_all.called
-        assert core.exploiter.get_all.called
         assert core._perform_modifications.called
+        assert core._perform_modifications.call_args.args[0]._extract_mock_name() == "exploiter"
 
         # assert that we added stop_production kwarg!
         assert "stop_reproduction" in core._perform_modifications.call_args.kwargs
@@ -326,7 +324,6 @@ class TestFreneticCore_Mutation(object):
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         assert core.get_mutated_tests() == []
-
         assert not core._perform_modifications.called
 
     def test_get_mutated_tests__PASS_no_mutator(self):
@@ -343,7 +340,6 @@ class TestFreneticCore_Mutation(object):
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         assert core.get_mutated_tests() == []
-
         assert not core._perform_modifications.called
 
 
@@ -368,11 +364,11 @@ class TestFreneticCore_Crossover(object):
         core._select_crossover_candidates = MagicMock(
             name="_select_crossover_candidates", return_value=[1, 2, 3]
         )  # just a non-empty list
-        core.crossover.generate.return_value = []  # return empty list
+        core.crossover.return_value = []  # return empty list
 
         assert core.get_crossover_tests() == []
         assert core._select_crossover_candidates.called
-        assert core.crossover.generate.called
+        assert core.crossover.called
 
     def test_get_crossover_tests__with_generated_children(self):
         core = FreneticCore(representation=None, objective=None, crossover=MagicMock(name="crossover"))
@@ -393,7 +389,7 @@ class TestFreneticCore_Crossover(object):
         test = [12, 13, 14, 15]
         method = "test method"
         info = dict(parent_1_index=1, parent_2_index=3)
-        core.crossover.generate.return_value = [(test, method, info)]  # return  empty list
+        core.crossover.return_value = [(test, method, info)]  # return  empty list
 
         assert core.get_crossover_tests() == [dict(test=test, method=method, **info)]
 
@@ -402,6 +398,6 @@ class TestFreneticCore_Crossover(object):
         assert core.df.loc[3].visited == 1
 
         assert core._select_crossover_candidates.called
-        assert core.crossover.generate.called
+        assert core.crossover.called
 
     # TODO: Test _select_crossover_candidates

@@ -1,55 +1,62 @@
-import abc
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 
-from freneticlib.utils.gaussian import gaussian_alteration
+from .abstract_operators import AbstractMutator, AbstractMutationOperator
+from freneticlib.representations import abstract_generator
 from freneticlib.utils.random import seeded_rng
 
 
-class AbstractMutator(abc.ABC):
-    @abc.abstractmethod
-    def get_all(self):
-        pass
-
-    @staticmethod
-    def get_test(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        if isinstance(parent_info, dict):
-            test = parent_info["test"]
-        else:
-            test = parent_info
-        return test
+def get_test(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
+    """Return the (numeric) test from a parent_info dict."""
+    if isinstance(parent_info, dict):
+        test = parent_info["test"]
+    else:
+        test = parent_info
+    return test
 
 
-class ListMutator(AbstractMutator):
-    def __init__(self, generator):
-        self.generator = generator
-        self.min_length = 10
+class RemoveFront(AbstractMutationOperator):
 
-    def get_all(self):
-        return [
-            ("extend test with 1 to 5 new values", self.extend),
-            ("randomly remove 1 to 5 values", self.randomly_remove_kappas),
-            ("remove 1 to 5 values from front", self.remove_from_front),
-            ("remove 1 to 5 values from tail", self.remove_from_tail),
-            ("randomly replace 1 to 5 values", self.random_replacement),
-        ]
+    def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
+        self.remove_at_least = remove_at_least
+        self.remove_at_most = remove_at_most
+        self.min_length_for_operator = min_length_for_operator
 
-    def remove_from_front(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = self.get_test(parent_info)
-        assert len(test) >= self.min_length
-        return test[seeded_rng().integers(1, 5) :]
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+        assert self.is_applicable(test)
+        return test[seeded_rng().integers(self.remove_at_least, self.remove_at_most):]
 
-    def remove_from_tail(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = self.get_test(parent_info)
-        assert len(test) >= self.min_length
-        return test[: -seeded_rng().integers(1, 5)]
+    def is_applicable(self, test) -> bool:
+        return len(test) >= self.min_length_for_operator
 
-    def randomly_remove_kappas(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = self.get_test(parent_info)
-        assert len(test) >= self.min_length
+
+class RemoveBack(AbstractMutationOperator):
+
+    def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
+        self.remove_at_least = remove_at_least
+        self.remove_at_most = remove_at_most
+        self.min_length_for_operator = min_length_for_operator
+
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+        assert len(test) >= self.min_length_for_operator
+        return test[: -seeded_rng().integers(self.remove_at_least, self.remove_at_most)]
+
+    def is_applicable(self, test) -> bool:
+        return len(test) >= self.min_length_for_operator
+
+
+class RemoveRandom(AbstractMutationOperator):
+
+    def __init__(self, remove_at_least: int = 1, remove_at_most: int = 5, min_length_for_operator: int = 10):
+        self.remove_at_least = remove_at_least
+        self.remove_at_most = remove_at_most
+        self.min_length_for_operator = min_length_for_operator
+
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+        assert len(test) >= self.min_length_for_operator
         # number of test to be removed
-        k = seeded_rng().integers(1, 5)
+        k = seeded_rng().integers(self.remove_at_least, self.remove_at_most)
         modified_test = test[:]
         while k > 0 and len(modified_test) > 5:
             # Randomly remove a kappa
@@ -58,139 +65,95 @@ class ListMutator(AbstractMutator):
             k -= 1
         return modified_test
 
-    def extend(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = self.get_test(parent_info)
+    def is_applicable(self, test) -> bool:
+        return len(test) >= self.min_length_for_operator
+
+
+class AddBack(AbstractMutationOperator):
+
+    def __init__(self, add_at_least: int = 1, add_at_most: int = 5):
+        self.add_at_least = add_at_least
+        self.add_at_most = add_at_most
+
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
         modified_test = test[:]
-        for i in range(seeded_rng().integers(1, 5)):
-            # Randomly add a value
-            modified_test.append(self.generator.get_value(modified_test))
+        for i in range(seeded_rng().integers(self.add_at_least, self.add_at_most)):
+            modified_test.append(generator.get_value(modified_test))
         return modified_test
 
-    def random_replacement(self, parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = self.get_test(parent_info)
+
+class ReplaceRandom(AbstractMutationOperator):
+
+    def __init__(self, replace_at_least: int = 1, replace_at_most: int = 5):
+        self.replace_at_least = replace_at_least
+        self.replace_at_most = replace_at_most
+
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
         # Randomly replace values
-        indices = seeded_rng().choice(len(test), seeded_rng().integers(1, 5), replace=False)
+        indices = seeded_rng().choice(len(test), seeded_rng().integers(self.replace_at_least, self.replace_at_most), replace=False)
         modified_test = test[:]
 
-        for i in indices:
-            modified_test[i] = self.generator.get_value(modified_test[:i])
+        for i in sorted(indices):
+            modified_test[i] = generator.get_value(modified_test[:i])
         return modified_test
 
 
-class ValueAlterationMutator(AbstractMutator):
-    def get_all(self):
-        return [("alter the values by 0.9 ~ 1.1", self.random_alteration)]
+class AlterValues(AbstractMutationOperator):
 
-    @staticmethod
-    def random_alteration(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = ValueAlterationMutator.get_test(parent_info)
+    def __init__(self, mutation_factor_low: float = 0.9, mutation_factor_high: float = 1.1, mutation_chance: float = 0.1):
+        self.mutation_factor_low = mutation_factor_low
+        self.mutation_factor_high = mutation_factor_high
+        self.mutation_chance = mutation_chance
 
-        modified = False
+    def _alter_once(self, test):
+        mutated = test.copy()
+        # for each element, set a mutation factor
+        factors = seeded_rng().uniform(self.mutation_factor_low, self.mutation_factor_high, size=test.shape)
+        # random values to identify which ones to mutate
+        chances = seeded_rng().uniform(size=test.shape)
+        mask = chances < self.mutation_chance
+        # mutate
+        mutated[mask] = mutated[mask] * factors[mask]
+        return mutated
 
-        while not modified:
-            modified_test = []
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+        test = np.array(test)  # force convert test to numpy array
+        mutated = test.copy()
 
-            for k in test:
-                if type(k) == float:
-                    if seeded_rng().random() < 0.1:
-                        modified_test.append(k * seeded_rng().uniform(0.90, 1.1))
-                        modified = True
-                    else:
-                        modified_test.append(k)
-                elif type(k) == tuple:
-                    mk = []
-                    for v in k:
-                        if seeded_rng().random() < 0.1:
-                            mk.append(v * seeded_rng().uniform(0.90, 1.1))
-                            modified = True
-                        else:
-                            mk.append(v)
-                    modified_test.append(tuple(mk))
-                else:
-                    raise NotImplementedError("Method alteration is only implemented for floats or tuples of floats")
+        while (mutated == test).all():  # until we have a mutation
+            mutated = self._alter_once(test)
 
-        return modified_test
+        return mutated.tolist()
 
 
-class ValueAlterationMutatorKappaStep(AbstractMutator):
-    def get_all(self):
-        return [("alter the values by 0.9 ~ 1.1", self.random_alteration)]
+class KappaStepAlterValues(AlterValues):
 
-    @staticmethod
-    def random_alteration(parent_info: Union[dict, List[float]]) -> List[Union[float, Tuple[float, float]]]:
-        test = ValueAlterationMutator.get_test(parent_info)
-        modified = False
+    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+        test = np.array(test)  # force convert test to numpy array
+        mutated = test.copy()
 
-        while not modified:
-            modified_test = []
-            for k in test[:-1]:
-                mk = []
-                for v in k:
-                    if seeded_rng().random() < 0.1:
-                        mk.append(v * seeded_rng().uniform(0.9, 1.1))
-                        modified = True
-                    else:
-                        mk.append(v)
-                modified_test.append(tuple(mk))
+        # we need to ignore the last step, because it is unused!
+        all_except_last_mask = np.ones(shape=mutated.shape, dtype = np.bool)
+        all_except_last_mask[-1,1] = False
 
-            kappa, step = test[-1]
-            if seeded_rng().random() < 0.1:
-                modified_kappa = kappa * seeded_rng().uniform(0.9, 1.1)
-                modified_test.append((modified_kappa, step))
-                modified = True
-            else:
-                modified_test.append((kappa, step))
+        while (mutated == test)[all_except_last_mask].all():  # until we have a mutation, but not in the place of mask
+            mutated = self._alter_once(test)
 
-        return modified_test
+        return mutated.tolist()
 
 
-class GaussianPushMutator(ListMutator):
-    def __init__(self, generator):
-        super().__init__(generator)
-        self.bound = generator.global_bound
 
-    def get_all(self):
-        return [("gaussian push", self.gaussian_push)]
+class FreneticMutator(AbstractMutator):
 
-    def gaussian_push(self, parent_info: dict) -> Dict[str, List[float]]:
-        test = parent_info["test"]
-
-        result: Dict[str, List[float]] = {}
-        oob_distances = np.array(parent_info["oob_distances"])
-        road = np.array(parent_info["road"])
-        car_positions = parent_info["car_positions"]
-
-        resampled_oobd = GaussianPushMutator._resample_oob_distances(
-            oob_distances=oob_distances, road_points=road, car_positions=car_positions
-        )
-
-        center = np.where(resampled_oobd == np.amin(resampled_oobd))[0][0]
-
-        min_std = 1
-        max_std = 6
-
-        for std in range(min_std, max_std):
-            result[f"std-{std}-pos-0"] = gaussian_alteration(test, center, std_dev=float(std), bound=self.bound)
-
-        for pos in range(1, 10):
-            shifted_center = center - pos
-            if shifted_center < 0:
-                break
-            result[f"std-1-pos-{pos}"] = gaussian_alteration(test, shifted_center, bound=self.bound)
-
-        return result
-
-    @staticmethod
-    def _resample_oob_distances(
-        oob_distances: np.array,
-        road_points: np.array,
-        car_positions: np.array,
-    ) -> np.array:
-        # TODO: Refactor (this method is also defied in freNNet model).
-        indexes = [np.linalg.norm(car_positions - p, axis=-1).argmin() for p in road_points]
-        return oob_distances[indexes]
+    def __init__(self, operators: list[AbstractMutationOperator] = None):
+        operators = operators or [  # default mutators
+            RemoveFront(),
+            RemoveBack(),
+            RemoveRandom(),
+            AddBack(),
+            ReplaceRandom(),
+            AlterValues()
+        ]
+        super().__init__(operators)
 
 
-class FreneticMutator(ListMutator):
-    def get_all(self):
-        return super().get_all() + [("alter the values by 0.9 ~ 1.1", ValueAlterationMutator.random_alteration)]

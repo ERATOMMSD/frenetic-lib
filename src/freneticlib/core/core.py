@@ -4,6 +4,7 @@ from typing import Iterator
 
 import pandas as pd
 
+from freneticlib.core.mutation import abstract_operators
 from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_generator import RoadGenerator
@@ -13,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 class FreneticCore(object):
     """The core module of frenetic-lib. It handles the representation"""
-
 
     df: pd.DataFrame = None
     """Stores the history including road, execution outcome and parent info."""
@@ -107,14 +107,14 @@ class FreneticCore(object):
         self.df.at[parent.name, "visited"] = 1
 
         if self.exploiter and parent.outcome == Outcome.FAIL:
-            return self._perform_modifications(self.exploiter.get_all(), parent, stop_reproduction=True)
+            return self._perform_modifications(self.exploiter, parent, stop_reproduction=True)
         elif self.mutator and parent.outcome == Outcome.PASS:
-            return self._perform_modifications(self.mutator.get_all(), parent)
+            return self._perform_modifications(self.mutator, parent)
         else:
-            logger.warning("No modification was applied because there is no exploiter nor mutator defined.")
+            logger.warning("No modification was applied because there is neither an exploiter nor a mutator defined.")
             return []
 
-    def _perform_modifications(self, functions, parent, stop_reproduction=False) -> list:
+    def _perform_modifications(self, mutator: abstract_operators.AbstractMutator, parent, stop_reproduction=False) -> list:
         if parent.test is None:
             return []
 
@@ -122,11 +122,11 @@ class FreneticCore(object):
         test_info["visited"] = 1 if stop_reproduction else 0
 
         modified_tests = []
-        for name, function in functions:
+        for operator in mutator.get_all():
             try:
-                modified_tests.append(dict(test=function(parent.test), method=name, **test_info))
+                modified_tests.append(dict(test=operator(self.representation, parent.test), method=str(operator), **test_info))
             except Exception:
-                logger.error(f"Error during modification of test {test_info} during function {name}", exc_info=True)
+                logger.error(f"Error during modification of test {test_info} during function {str(operator)}", exc_info=True)
 
         return modified_tests
 
@@ -139,8 +139,14 @@ class FreneticCore(object):
 
         # we take the best parent that hasn't been visited yet, whose feature is below/above the threshold
         selection = self._select_by_maxvisits_and_threshold(max_visits=0)
-        if hasattr(self.mutator, "min_length"):  # filter by min_length, if needed
-            selection = selection[selection.test.apply(len) >= self.mutator.min_length]
+
+        # only use those parents where all mutation operators are applicable
+        operator_filter = selection.apply(lambda x: True, axis=1)
+        for op in self.mutator.get_all():
+            operator_filter = operator_filter & selection.test.apply(op.is_applicable)
+
+        selection = selection[operator_filter]
+
         return self.objective.get_best(selection)
 
     def _select_by_maxvisits_and_threshold(self, max_visits=0):
@@ -166,16 +172,16 @@ class FreneticCore(object):
 
         # parents_recombination
         candidates = self._select_crossover_candidates()
-        if len(candidates) > 0:
-            child_tests = []
-            for child, method, info in self.crossover.generate(candidates):
-                self.df.at[info["parent_1_index"], "visited"] = self.df.iloc[info["parent_1_index"]]["visited"] + 1
-                self.df.at[info["parent_2_index"], "visited"] = self.df.iloc[info["parent_2_index"]]["visited"] + 1
-                child_tests.append(dict(test=child, method=method, **info))
-            return child_tests
-        else:
+        if len(candidates) <= 0:
             logger.warning("No candidates for crossover.")
             return []
+
+        child_tests = []
+        for child, method, info in self.crossover(self.representation, candidates):
+            self.df.at[info["parent_1_index"], "visited"] = self.df.iloc[info["parent_1_index"]]["visited"] + 1
+            self.df.at[info["parent_2_index"], "visited"] = self.df.iloc[info["parent_2_index"]]["visited"] + 1
+            child_tests.append(dict(test=child, method=method, **info))
+        return child_tests
 
     def _select_crossover_candidates(self) -> list:
         if len(self.df) <= 0:
@@ -185,7 +191,7 @@ class FreneticCore(object):
         assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
 
         selection = self._select_by_maxvisits_and_threshold(self.crossover_max_visits)
-        if len(selection) < self.crossover.min_size:
+        if not self.crossover.is_applicable(selection):
             logger.warning(
                 "Couldn't select enough tests to generate crossover candidates. "
                 + f"Select: {len(selection)}, Crossover min size: {self.crossover.min_size}"
