@@ -1,4 +1,5 @@
 import abc
+from typing import Tuple, List
 
 import numpy as np
 
@@ -7,7 +8,7 @@ from freneticlib.utils.random import seeded_rng
 from .abstract_generator import RoadGenerator
 
 
-def frenet_to_cartesian(x0, y0, theta0, ss, kappas):
+def frenet_to_cartesian(x0, y0, theta0, ss, kappas) -> List:
     xs = np.zeros(len(kappas))
     ys = np.zeros(len(kappas))
     thetas = np.zeros(len(kappas))
