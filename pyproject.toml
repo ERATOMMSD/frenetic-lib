@@ -37,6 +37,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+beamngpy = "*"
 click = "*"
 numpy = "*"
 pandas = "*"
