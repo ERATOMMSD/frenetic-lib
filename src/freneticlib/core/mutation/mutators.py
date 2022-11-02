@@ -139,7 +139,7 @@ class KappaStepAlterValues(AlterValues):
 
 
 class FreneticMutator(AbstractMutator):
-    def __init__(self, operators: list[AbstractMutationOperator] = None):
+    def __init__(self, operators: List[AbstractMutationOperator] = None):
         operators = operators or [  # default mutators
             RemoveFront(),
             RemoveBack(),

@@ -1,4 +1,5 @@
 import abc
+from typing import List, Callable
 
 from freneticlib.representations import abstract_generator
 
@@ -16,8 +17,8 @@ class AbstractMutationOperator(abc.ABC):
 
 
 class AbstractMutator(abc.ABC):
-    def __init__(self, operators: list[callable]):
+    def __init__(self, operators: List[Callable]):
         self.operators = operators
 
-    def get_all(self) -> list[AbstractMutationOperator]:
+    def get_all(self) -> List[Callable]:
         return self.operators
