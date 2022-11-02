@@ -67,7 +67,11 @@ class BicycleExecutor(AbstractExecutor):
 
         # compose the return value as outcome (pass / failed), val (the objective)
         outcome = Outcome.FAIL if records_df.is_oob.any() else Outcome.PASS
-        assert self.objective.feature in records_df.columns, f"The feature ('{self.objective.feature}') is not recorded in the execution records. The records contain the following features:\n {sorted(records_df.columns.tolist())}. \nBicycle executor typically supports at least: \n {sorted(self.CALCULATED_FEATURES)}"
+        assert self.objective.feature in records_df.columns, (
+            f"The feature ('{self.objective.feature}') is not recorded in the execution records. The records contain the"
+            f" following features:\n {sorted(records_df.columns.tolist())}. \nBicycle executor typically supports at least: \n"
+            f" {sorted(self.CALCULATED_FEATURES)}"
+        )
         val = records_df[self.objective.feature].aggregate(self.objective.aggregator)
         return_value = {self.objective.feature: val, "outcome": outcome}
 

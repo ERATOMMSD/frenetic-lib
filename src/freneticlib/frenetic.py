@@ -65,8 +65,8 @@ class Frenetic(object):
         Creates a line plot showing the objective feature's value for each simulation.
         Random generations are shown in gray, the mutated values in blue.
         Args:
-            filename (str, optional): If a filename is specified, plot will be stored on disk.
-                Otherwise, it will be shown on screen. Defaults to None.
+            filename (str, optional): If a filename is specified, plot will be stored on disk. Otherwise, it will be shown on screen. Defaults to None.
+
         """
         feature = self.core.objective.feature
 

@@ -7,29 +7,24 @@
 # Thus, this file is also made available under GPL.
 
 import logging
+import os.path
 import subprocess
-
+import sys
 import time
 import traceback
-from typing import Tuple, Union, List, Dict
-
-import sys
 from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from shapely import geometry
 
 from freneticlib.core.objective import AbstractObjective
+from freneticlib.executors.abstract_executor import AbstractExecutor
 from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_generator import RoadGenerator
 from freneticlib.utils import geometry_utils
-
-from shapely import geometry
-
-import os.path
-
-from freneticlib.executors.abstract_executor import AbstractExecutor
 
 FloatDTuple = Tuple[float, float, float, float]
 
@@ -37,45 +32,49 @@ logger = logging.getLogger(__name__)
 
 KMH_TO_MS_FACTOR = 0.277778
 
-class BeamNGExecutor(AbstractExecutor):
 
+class BeamNGExecutor(AbstractExecutor):
     CALCULATED_FEATURES = [
-        'timer',
-        'pos',
-        'dir',
-        'vel',
-        'steering',
-        'steering_input',
-        'brake',
-        'brake_input',
-        'throttle',
-        'throttle_input',
-        'wheelspeed',
-        'vel_kmh',
-        'is_oob',
-        'oob_counter',
-        'max_oob_percentage',
-        'oob_distance',
-        'oob_percentage',
+        "timer",
+        "pos",
+        "dir",
+        "vel",
+        "steering",
+        "steering_input",
+        "brake",
+        "brake_input",
+        "throttle",
+        "throttle_input",
+        "wheelspeed",
+        "vel_kmh",
+        "is_oob",
+        "oob_counter",
+        "max_oob_percentage",
+        "oob_distance",
+        "oob_percentage",
     ]
 
     def __init__(
-            self,
-            representation: RoadGenerator,
-            objective: AbstractObjective,
-            normalizer: AbstractNormalizer = None,
-            results_path: Union[str, Path] = None,
-            cps_pipeline_path: Union[str, Path] = None,
-            beamng_home=None, beamng_user=None,
-            oob_tolerance: float = 0.95, max_speed_in_kmh: int = 70, risk_value: float = 0.7
-            ):
+        self,
+        representation: RoadGenerator,
+        objective: AbstractObjective,
+        normalizer: AbstractNormalizer = None,
+        results_path: Union[str, Path] = None,
+        cps_pipeline_path: Union[str, Path] = None,
+        beamng_home=None,
+        beamng_user=None,
+        oob_tolerance: float = 0.95,
+        max_speed_in_kmh: int = 70,
+        risk_value: float = 0.7,
+    ):
         super().__init__(representation, objective, normalizer, results_path)
 
         cps_pipeline_path = Path(cps_pipeline_path).expanduser()
         print(cps_pipeline_path)
-        assert cps_pipeline_path.exists(), "To use BeamNG Executor, please clone/download the CPS Tool Pipeline and pass the Path as argument."
+        assert (
+            cps_pipeline_path.exists()
+        ), "To use BeamNG Executor, please clone/download the CPS Tool Pipeline and pass the Path as argument."
         sys.path.append(str(cps_pipeline_path))  # add the pipeline path to sys.path so we can import/use the modules below
-
 
         # TODO This is specific to the TestSubject, we should encapsulate this better
         self.risk_value = risk_value
@@ -83,7 +82,7 @@ class BeamNGExecutor(AbstractExecutor):
         self.oob_tolerance = oob_tolerance
         self.max_speed_in_kmh = max_speed_in_kmh
 
-        self.brewer: 'BeamNGBrewer' = None
+        self.brewer: "BeamNGBrewer" = None  # noqa: F821
         self.pipeline_path = cps_pipeline_path
         self.beamng_home = Path(beamng_home).expanduser()
         self.beamng_user = Path(beamng_user).expanduser()
@@ -100,7 +99,7 @@ class BeamNGExecutor(AbstractExecutor):
         cartesian = self.representation.to_cartesian(test)
         original_line = geometry.LineString(np.array(cartesian))
         interpolated_points = geometry_utils.cubic_spline(original_line).xy
-        beamng_format = [(x, y, -28., 8.0) for x, y in zip(*interpolated_points)]  # as shown in tests_generation.py
+        beamng_format = [(x, y, -28.0, 8.0) for x, y in zip(*interpolated_points)]  # as shown in tests_generation.py
 
         # TODO Not sure why we need to repeat this 2 times...
         counter = 2
@@ -108,11 +107,14 @@ class BeamNGExecutor(AbstractExecutor):
         attempt = 0
         sim = None
         condition = True
+
+        description = None
+
         while condition:
             attempt += 1
             if attempt == counter:
                 test_outcome = "ERROR"
-                description = 'Exhausted attempts'
+                description = "Exhausted attempts"
                 break
             if attempt > 1:
                 self._close()
@@ -127,20 +129,24 @@ class BeamNGExecutor(AbstractExecutor):
                     description = sim.exception_str
                 else:
                     test_outcome = Outcome.PASS
-                    description = 'Successful test'
                 condition = False
 
-        execution_data = sim.states
         if len(sim.states) > 0:
             features = sim.states[0]._asdict().keys()
-            assert self.objective.feature in features, f"The feature ('{self.objective.feature}') is not recorded in the execution records. The records contain the following features:\n {sorted(features)}. \nBeamNG executor typically supports at least: \n {sorted(self.CALCULATED_FEATURES)}"
+            assert self.objective.feature in features, (
+                f"The feature ('{self.objective.feature}') is not recorded in the execution records. The records contain the"
+                f" following features:\n {sorted(features)}. \nBeamNG executor typically supports at least: \n"
+                f" {sorted(self.CALCULATED_FEATURES)}"
+            )
 
-        val = pd.Series([rec._asdict()[self.objective.feature] for rec in sim.states], dtype=pd.Float64Dtype).aggregate(self.objective.aggregator)
+        val = pd.Series([rec._asdict()[self.objective.feature] for rec in sim.states], dtype=pd.Float64Dtype).aggregate(
+            self.objective.aggregator
+        )
 
-        return {self.objective.feature: val, "outcome": test_outcome}
+        return {self.objective.feature: val, "description": description, "outcome": test_outcome}
 
     def _is_the_car_moving(self, last_state):
-        """ Check if the car moved in the past 10 seconds """
+        """Check if the car moved in the past 10 seconds"""
 
         # Has the position changed
         if self.last_observation is None:
@@ -148,7 +154,12 @@ class BeamNGExecutor(AbstractExecutor):
             return True
 
         # If the car moved since the last observation, we store the last state and move one
-        if geometry.Point(self.last_observation.pos[0], self.last_observation.pos[1]).distance(geometry.Point(last_state.pos[0], last_state.pos[1])) > self.min_delta_position:
+        if (
+            geometry.Point(self.last_observation.pos[0], self.last_observation.pos[1]).distance(
+                geometry.Point(last_state.pos[0], last_state.pos[1])
+            )
+            > self.min_delta_position
+        ):
             self.last_observation = last_state
             return True
         else:
@@ -158,12 +169,12 @@ class BeamNGExecutor(AbstractExecutor):
             else:
                 return True
 
-    def _run_simulation(self, the_test) -> 'SimulationData':
+    def _run_simulation(self, the_test) -> "SimulationData":  # noqa: F821
         # we only use local imports, because we cannot be sure that the CPS Pipeline is actually available...
         from self_driving.beamng_brewer import BeamNGBrewer
-        from self_driving.beamng_tig_maps import maps, LevelsFolder
+        from self_driving.beamng_tig_maps import LevelsFolder, maps
         from self_driving.beamng_waypoint import BeamNGWaypoint
-        from self_driving.simulation_data import SimulationDataRecord, SimulationData
+        from self_driving.simulation_data import SimulationDataRecord
         from self_driving.simulation_data_collector import SimulationDataCollector
         from self_driving.utils import get_node_coords, points_distance
         from self_driving.vehicle_state_reader import VehicleStateReader
@@ -180,36 +191,41 @@ class BeamNGExecutor(AbstractExecutor):
         brewer = self.brewer
         brewer.setup_road_nodes(the_test)
         beamng = brewer.beamng
-        waypoint_goal = BeamNGWaypoint('waypoint_goal', get_node_coords(the_test[-1]))
+        waypoint_goal = BeamNGWaypoint("waypoint_goal", get_node_coords(the_test[-1]))
 
         # Note This changed since BeamNG.research
-        beamng_levels = LevelsFolder(os.path.join(self.beamng_user, '0.26', 'levels'))
+        beamng_levels = LevelsFolder(os.path.join(self.beamng_user, "0.26", "levels"))
         maps.beamng_levels = beamng_levels
-        maps.beamng_map = maps.beamng_levels.get_map('tig')
-        maps.source_levels = LevelsFolder(str(self.pipeline_path / 'levels_template'))
-        maps.source_map = maps.source_levels.get_map('tig')
+        maps.beamng_map = maps.beamng_levels.get_map("tig")
+        maps.source_levels = LevelsFolder(str(self.pipeline_path / "levels_template"))
+        maps.source_map = maps.source_levels.get_map("tig")
 
         maps.install_map_if_needed()
-        maps.beamng_map.generated().write_items(brewer.decal_road.to_json() + '\n' + waypoint_goal.to_json())
+        maps.beamng_map.generated().write_items(brewer.decal_road.to_json() + "\n" + waypoint_goal.to_json())
 
         vehicle_state_reader = VehicleStateReader(self.vehicle, beamng)
         brewer.vehicle_start_pose = brewer.road_points.vehicle_start_pose()
 
         steps = brewer.params.beamng_steps
-        simulation_id = time.strftime('%Y-%m-%d--%H-%M-%S', time.localtime())
-        simulation_name = f'beamng_executor/sim_{self.exec_counter}_{simulation_id}'
-        sim_data_collector = SimulationDataCollector(self.vehicle, beamng, brewer.decal_road, brewer.params,
-                                                     vehicle_state_reader=vehicle_state_reader,
-                                                     simulation_name=simulation_name)
+        simulation_id = time.strftime("%Y-%m-%d--%H-%M-%S", time.localtime())
+        simulation_name = f"beamng_executor/sim_{self.exec_counter}_{simulation_id}"
+        sim_data_collector = SimulationDataCollector(
+            self.vehicle,
+            beamng,
+            brewer.decal_road,
+            brewer.params,
+            vehicle_state_reader=vehicle_state_reader,
+            simulation_name=simulation_name,
+        )
         # Patch the results path!
         if self.results_path:
             sd = sim_data_collector.simulation_data
             root = Path(self.results_path)
-            sd.simulations: Path = root.joinpath('simulations')
+            sd.simulations: Path = root.joinpath("simulations")
             sd.path_root = sd.simulations.joinpath(simulation_name)
-            sd.path_json = sd.path_root.joinpath('simulation.full.json')
-            sd.path_partial = sd.path_root.joinpath('simulation.partial.tsv')
-            sd.path_road_img = sd.path_root.joinpath('road')
+            sd.path_json = sd.path_root.joinpath("simulation.full.json")
+            sd.path_partial = sd.path_root.joinpath("simulation.partial.tsv")
+            sd.path_road_img = sd.path_root.joinpath("road")
 
         # TODO: Hacky - Not sure what's the best way to set this...
         sim_data_collector.oob_monitor.tolerance = self.oob_tolerance
@@ -223,7 +239,7 @@ class BeamNGExecutor(AbstractExecutor):
 
             brewer.vehicle.ai_set_aggression(self.risk_value)
             #  Sets the target speed for the AI in m/s, limit means this is the maximum value (not the reference one)
-            brewer.vehicle.ai_set_speed(self.max_speed_in_kmh * KMH_TO_MS_FACTOR, mode='limit')
+            brewer.vehicle.ai_set_speed(self.max_speed_in_kmh * KMH_TO_MS_FACTOR, mode="limit")
             brewer.vehicle.ai_drive_in_lane(True)
             brewer.vehicle.ai_set_waypoint(waypoint_goal.name)
 
@@ -253,7 +269,7 @@ class BeamNGExecutor(AbstractExecutor):
                 sim_data_collector.save()
             try:
                 sim_data_collector.take_car_picture_if_needed()
-            except:
+            except Exception as ex:
                 pass
 
             # self.end_iteration()
@@ -272,12 +288,11 @@ class BeamNGExecutor(AbstractExecutor):
 
     def _close(self):
         if self.brewer:
-
             try:
                 self.brewer.beamng.scenario.close()
 
                 beamng_program_name = "BeamNG.tech.x64"
-                cmd = "taskkill /IM \"{}.exe\" /F".format(beamng_program_name)
+                cmd = 'taskkill /IM "{}.exe" /F'.format(beamng_program_name)
                 ret = subprocess.check_output(cmd)
 
                 output_str = ret.decode("utf-8")
