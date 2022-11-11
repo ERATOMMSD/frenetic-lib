@@ -1,5 +1,5 @@
 import abc
-from typing import List, Callable
+from typing import Callable, List
 
 from freneticlib.representations import abstract_generator
 

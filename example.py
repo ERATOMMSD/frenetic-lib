@@ -33,7 +33,7 @@ def run_example():
         exploiter=exploiters.Exploiter([
             exploiters.ReverseTest(),
             exploiters.SplitAndSwap(),
-            exploiters.KappaFlipSign()
+            exploiters.FlipSign()
         ]),
         crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )

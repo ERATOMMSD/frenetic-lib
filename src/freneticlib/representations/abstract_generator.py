@@ -31,3 +31,9 @@ class RoadGenerator(abc.ABC):
     @abc.abstractmethod
     def to_cartesian(self, test):
         pass
+
+    def is_valid(self, test) -> bool:
+        return True
+
+    def fix(self, test):
+        return test

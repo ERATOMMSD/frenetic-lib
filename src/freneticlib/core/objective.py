@@ -32,7 +32,7 @@ class AbstractObjective(abc.ABC):
         """
         self.feature = feature
         self.threshold = threshold
-        self.aggregator = per_simulation_aggregator.strip()
+        self.aggregator = per_simulation_aggregator
         self.dynamic_threshold_quantile = dynamic_threshold_quantile
 
         self.minimize = True

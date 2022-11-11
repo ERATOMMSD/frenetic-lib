@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Dict, Union
 
 from freneticlib.core.objective import AbstractObjective
-from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_generator import RoadGenerator
 
@@ -16,11 +15,9 @@ class AbstractExecutor(abc.ABC):
         self,
         representation: RoadGenerator,
         objective: AbstractObjective,
-        normalizer: AbstractNormalizer = None,
         results_path: Union[str, Path] = None,
     ):
         self.representation = representation
-        self.normalizer = normalizer
         self.objective = objective
         self.results_path = Path(results_path) if results_path else None
         self.exit_on_error = True
@@ -36,8 +33,6 @@ class AbstractExecutor(abc.ABC):
         self.exec_counter += 1  # counts how many executions have been
 
         test = test_dict["test"]
-        if self.normalizer:
-            test = self.normalizer.normalize(test_dict["test"])
 
         try:
             test_dict.update(self._execute(test))

@@ -50,6 +50,28 @@ class FixStepKappaGenerator(AbstractKappaGenerator):
         ss = np.cumsum([self.step] * len(test)) - self.step
         return frenet_to_cartesian(x0=0, y0=0, theta0=1.57, ss=ss, kappas=test)
 
+    def is_valid(self, test) -> bool:
+        np_arr = np.array(test)
+
+        # check global bounds
+        if (abs(np_arr) > self.global_bound).any():
+            return False
+
+        # check global bounds
+        diffs = np_arr[1:] - np_arr[:-1]
+        if (abs(diffs) > self.local_bound).any():
+            return False
+        return True
+
+    def fix(self, test):
+        test[0] = max(min(test[0], self.global_bound), -self.global_bound)
+        for i in range(1, len(test)):
+            previous = test[i - 1]
+            min_bound = max(-self.global_bound, previous - self.local_bound)
+            max_bound = min(self.global_bound, previous + self.local_bound)
+            test[i] = max(min(test[i], max_bound), min_bound)
+        return test
+
 
 class KappaGenerator(AbstractKappaGenerator):
     def __init__(
@@ -77,3 +99,30 @@ class KappaGenerator(AbstractKappaGenerator):
         ss = np.zeros(len(kappas))
         ss[1:] = np.cumsum(ss_deltas[0:-1])
         return frenet_to_cartesian(x0=0, y0=0, theta0=1.57, ss=ss, kappas=kappas)
+
+    def is_valid(self, test) -> bool:
+        np_arr = np.array(test)
+
+        # check global bounds
+        if (abs(np_arr[:, 0]) >= self.global_bound).any():
+            return False
+
+        # check global bounds
+        diffs = np_arr[1:, 0] - np_arr[:-1, 0]
+        if (abs(diffs) >= self.local_bound).any():
+            return False
+
+        # check step sizes
+        if (np_arr[:, 1] <= self.low_step).any() or (np_arr[:, 1] >= self.high_step).any():
+            return False
+
+        return True
+
+    def fix(self, test):
+        test[0, 0] = max(min(test[0, 0], self.global_bound), -self.global_bound)
+        for i in range(1, len(test)):
+            previous = test[i - 1][0]
+            min_bound = max(-self.global_bound, previous - self.local_bound)
+            max_bound = min(self.global_bound, previous + self.local_bound)
+            test[i, 0] = max(min(test[i, 0], max_bound), min_bound)
+        return test

@@ -21,7 +21,6 @@ def bic_executor():
     return BicycleExecutor(
         representation=cartesian_generator.CatmullRomGenerator(control_nodes=30, variation=5),
         objective=MaxObjective("distance_from_center", per_simulation_aggregator="max"),
-        normalizer=None,
     )
 
 

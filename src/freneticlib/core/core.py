@@ -45,7 +45,9 @@ class FreneticCore(object):
             logger.warning(f"No {name} operator was chosen.")
 
     def ask_random(self) -> Dict:
-        return dict(test=self.representation.generate(), method="random", visited=0, generation=0)
+        test = self.representation.generate()
+        assert self.representation.is_valid(test), "The newly generated test should be valid."
+        return dict(test=test, method="random", visited=0, generation=0)
 
     def tell(self, record: Dict):
         logger.debug("Tell:")  # {road} -> {result}")
@@ -124,7 +126,16 @@ class FreneticCore(object):
         modified_tests = []
         for operator in mutator.get_all():
             try:
-                modified_tests.append(dict(test=operator(self.representation, parent.test), method=str(operator), **test_info))
+                mutated_test = operator(self.representation, parent.test)
+                if not self.representation.is_valid(mutated_test):
+                    logger.debug(f"Mutation operator {str(operator)} produced an invalid test. Attempting to fix it.")
+                    mutated_test = self.representation.fix(mutated_test)
+                    if not self.representation.is_valid(mutated_test):
+                        logger.warning("Couldn't fix the test.")
+                        import pdb; pdb.set_trace()
+                        continue
+                modified_tests.append(dict(test=mutated_test, method=str(operator), **test_info))
+
             except Exception:
                 logger.error(f"Error during modification of test {test_info} during function {str(operator)}", exc_info=True)
 
@@ -142,6 +153,7 @@ class FreneticCore(object):
 
         # only use those parents where all mutation operators are applicable
         operator_filter = selection.apply(lambda x: True, axis=1)
+        # note, this weird loop form is required, because pandas removes columns when selecting on an empty selection...
         for op in self.mutator.get_all():
             operator_filter = operator_filter & selection.test.apply(op.is_applicable)
 
