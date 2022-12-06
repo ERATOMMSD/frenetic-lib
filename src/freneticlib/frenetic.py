@@ -1,6 +1,7 @@
 import logging
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from freneticlib.core.core import FreneticCore
 from freneticlib.executors.abstract_executor import AbstractExecutor
@@ -53,11 +54,15 @@ class Frenetic(object):
         logger.info("The END.")
         logger.info("--------")
 
-    def store_results(self, filename: str = None):
+    def store_results(self, filename: str):
         """Store the results in a CSV file."""
-        if filename is not None:
-            logger.info(f"Storing the all the experiment results in file {filename}.")
-            self.core.df.to_csv(filename)  # , indent=4)
+        logger.info(f"Storing the all the experiment results in file {filename}.")
+        self.core.df.to_csv(filename)  # , indent=4)
+
+    def load_history(self, filename: str):
+        """Load an execution history from a CSV file."""
+        logger.info(f"Reading {filename} into the history.")
+        self.core.df = pd.read_csv(filename)
 
     def plot(self, filename: str = None):
         """Very simple plotting facility.
