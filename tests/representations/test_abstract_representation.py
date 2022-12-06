@@ -3,11 +3,11 @@ from typing import List
 import numpy as np
 import pytest
 
-from freneticlib.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_representation import RoadRepresentation
 
 
-class RoadGenerator_TestImpl(RoadGenerator):
-    """Implements Abstract Generator, so we can test it"""
+class RoadRepresentation_TestImpl(RoadRepresentation):
+    """Implements Abstract RoadRepresentation class, so we can test it"""
 
     def get_value(self, previous: List = None) -> int:
         return 0
@@ -16,21 +16,21 @@ class RoadGenerator_TestImpl(RoadGenerator):
         return []
 
 
-class TestAbstractRoadGenerator(object):
+class TestAbstractRoadRepresentation(object):
     @pytest.mark.parametrize("length", [1, 5, 10, 11, 50, 100])
     def test_get_length_with_no_variation(self, length):
         variation = 0
-        gen = RoadGenerator_TestImpl(length=length, variation=variation)
+        gen = RoadRepresentation_TestImpl(length=length, variation=variation)
         assert gen.get_length() == length
 
     def test_zero_length_raises_exception(self):
         with pytest.raises(ValueError):
-            gen = RoadGenerator_TestImpl(length=0, variation=0)
+            gen = RoadRepresentation_TestImpl(length=0, variation=0)
 
     @pytest.mark.parametrize("length", [6, 10, 11, 50, 100])
     def test_get_length_with_variation(self, length):
         variation = 5
-        gen = RoadGenerator_TestImpl(length=length, variation=variation)
+        gen = RoadRepresentation_TestImpl(length=length, variation=variation)
         lengths = np.array(
             [gen.get_length() for _ in range(100_000)]
         )  # get 100'000 test lengths, make sure that they're in the range
@@ -46,6 +46,6 @@ class TestAbstractRoadGenerator(object):
     @pytest.mark.parametrize("length", [1, 5, 10, 11, 50, 100])
     def test_generate_check_length_no_variation(self, length):
         variation = 0
-        gen = RoadGenerator_TestImpl(length=length, variation=variation)
+        gen = RoadRepresentation_TestImpl(length=length, variation=variation)
         test = gen.generate()
         assert len(test) == length

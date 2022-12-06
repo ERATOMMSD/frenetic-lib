@@ -5,7 +5,7 @@ import numpy as np
 
 from freneticlib.utils.random import seeded_rng
 
-from .abstract_generator import RoadGenerator
+from .abstract_representation import RoadRepresentation
 
 
 def thetas_to_cartesian(x0, y0, theta0, ss_deltas, delta_thetas):
@@ -23,7 +23,7 @@ def thetas_to_cartesian(x0, y0, theta0, ss_deltas, delta_thetas):
     return list(zip(xs, ys))
 
 
-class AbstractThetaGenerator(RoadGenerator, abc.ABC):
+class AbstractThetaRepresentation(RoadRepresentation, abc.ABC):
     def __init__(self, length: int, variation: int = 0, bound: float = np.pi / 12, delta: float = np.pi / 36):
         self.bound = bound
         self.delta = delta
@@ -37,7 +37,7 @@ class AbstractThetaGenerator(RoadGenerator, abc.ABC):
 
 
 # TODO: Consider adding the rest of the default parameters used in the transformation as part of the constructor
-class FixStepThetaGenerator(AbstractThetaGenerator):
+class FixStepThetaRepresentation(AbstractThetaRepresentation):
     def __init__(
         self, length: int, variation: int = 0, step: float = 10, bound: float = np.pi / 12, delta: float = np.pi / 36
     ):
@@ -52,7 +52,7 @@ class FixStepThetaGenerator(AbstractThetaGenerator):
         return thetas_to_cartesian(x0=0, y0=0, theta0=1.57, ss_deltas=ss, delta_thetas=test)
 
 
-class ThetaGenerator(AbstractThetaGenerator):
+class ThetaRepresentation(AbstractThetaRepresentation):
     def __init__(
         self,
         length: int,

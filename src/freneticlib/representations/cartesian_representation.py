@@ -2,7 +2,7 @@ from typing import List
 
 from freneticlib.utils import catmull
 
-from .abstract_generator import RoadGenerator
+from .abstract_representation import RoadRepresentation
 
 
 def points_to_deltas(control_points):
@@ -25,7 +25,7 @@ def deltas_to_points(deltas):
     return res
 
 
-class CatmullRomGenerator(RoadGenerator):
+class CatmullRomRepresentation(RoadRepresentation):
     def __init__(self, control_nodes: int, variation: int = 0, max_angle=35, num_spline_nodes=20, seg_length=10):
         self.generator = catmull.ControlNodesGenerator(
             num_control_nodes=control_nodes, max_angle=max_angle, seg_length=seg_length, num_spline_nodes=num_spline_nodes

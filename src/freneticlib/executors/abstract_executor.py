@@ -5,7 +5,7 @@ from typing import Dict, Union
 
 from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.outcome import Outcome
-from freneticlib.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_representation import RoadRepresentation
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class AbstractExecutor(abc.ABC):
     def __init__(
         self,
-        representation: RoadGenerator,
+        representation: RoadRepresentation,
         objective: AbstractObjective,
         results_path: Union[str, Path] = None,
     ):

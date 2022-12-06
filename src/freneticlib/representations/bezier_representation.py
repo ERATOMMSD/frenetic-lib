@@ -3,7 +3,7 @@ from typing import List
 import bezier
 import numpy as np
 
-from freneticlib.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_representation import RoadRepresentation
 from freneticlib.utils.catmull import ControlNodesGenerator
 
 
@@ -17,7 +17,7 @@ def points_to_deltas(control_points):
     return res
 
 
-class BezierGenerator(RoadGenerator):
+class BezierRepresentation(RoadRepresentation):
     def __init__(self, control_nodes: int, variation: int = 0, max_angle=35, interpolation_nodes=20, seg_length=10):
         self.generator = ControlNodesGenerator(
             num_control_nodes=control_nodes, max_angle=max_angle, seg_length=seg_length, num_spline_nodes=interpolation_nodes

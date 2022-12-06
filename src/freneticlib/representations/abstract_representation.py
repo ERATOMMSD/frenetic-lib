@@ -3,7 +3,7 @@ import abc
 from freneticlib.utils.random import seeded_rng
 
 
-class RoadGenerator(abc.ABC):
+class RoadRepresentation(abc.ABC):
     def __init__(self, length: int, variation: int = 0):
         if length <= 0:
             raise ValueError("Cannot specify test length of zero")

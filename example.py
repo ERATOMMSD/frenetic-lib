@@ -6,7 +6,7 @@ from freneticlib.core.mutation.mutators import FreneticMutator
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
 from freneticlib.frenetic import Frenetic
-from freneticlib.representations.kappa_generator import FixStepKappaGenerator
+from freneticlib.representations.kappa_representation import FixStepKappaRepresentation
 from freneticlib.stopcriteria.counter import CountingStop
 
 # specify a logging format
@@ -15,8 +15,8 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(nam
 
 def run_example():
     # We want a FixStep Kappa representation
-    representation = FixStepKappaGenerator(length=30, variation=5, step=10.0)
-    # representation = CatmullRomGenerator(control_nodes=30, variation=5)
+    representation = FixStepKappaRepresentation(length=30, variation=5, step=10.0)
+    # representation = CatmullRomRepresentation(control_nodes=30, variation=5)
 
     # Setup an objective. Here: maximize the distance_from_center (i.e. push the vehicle off the road)
     objective = MaxObjective(

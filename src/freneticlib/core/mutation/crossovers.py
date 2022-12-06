@@ -5,7 +5,7 @@ from typing import Dict, List
 import numpy as np
 
 from freneticlib.executors.outcome import Outcome
-from freneticlib.representations import abstract_generator
+from freneticlib.representations import abstract_representation
 from freneticlib.utils.random import seeded_rng
 
 logger = logging.getLogger(__name__)
@@ -39,18 +39,18 @@ class AbstractCrossoverOperator(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_1, parent_2):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
         pass
 
     def __str__(self):
         return self.__class__.__name__
 
-    def is_applicable(self, generator: abstract_generator.RoadGenerator, parent_1, parent_2) -> bool:
+    def is_applicable(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2) -> bool:
         return True
 
 
 class ChromosomeCrossover(AbstractCrossoverOperator):
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_1, parent_2):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
         min_len = min(len(parent_1), len(parent_2))
         np_arr = np.array([parent_1[:min_len], parent_2[:min_len]])  # crop to min_len and make to numpy array
         children = seeded_rng().permuted(np_arr)  # permutate along axis using numpy
@@ -58,7 +58,7 @@ class ChromosomeCrossover(AbstractCrossoverOperator):
 
 
 class SinglePointCrossover(AbstractCrossoverOperator):
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_1, parent_2):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
         # more or less in the middle
         amount = min(len(parent_1) // 2 - 2, len(parent_2) // 2 - 2)
         variability = seeded_rng().integers(-amount, amount)
@@ -75,7 +75,7 @@ class AbstractCrossover(abc.ABC):
         self.operators = operators
 
     @abc.abstractmethod
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: List) -> List:
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_candidates: List) -> List:
         pass
 
     def is_applicable(self, parent_candidates: List) -> bool:
@@ -91,7 +91,7 @@ class ChooseRandomCrossoverOperator(AbstractCrossover):
         self.size = size
         self.min_number_candidates_for_crossover = 4
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, parent_candidates: List) -> List:
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_candidates: List) -> List:
         """
         Args:
             candidates (list): A list of candidate tests to be chosen as parents
@@ -113,8 +113,8 @@ class ChooseRandomCrossoverOperator(AbstractCrossover):
                 chosen_operator = seeded_rng().choice(self.operators)
                 method = str(chosen_operator)
                 parents_info = combine_parents_info(parent_1_info, parent_2_info)
-                if chosen_operator.is_applicable(generator, parent_1, parent_2):
-                    newborns = chosen_operator(generator, parent_1, parent_2)
+                if chosen_operator.is_applicable(representation, parent_1, parent_2):
+                    newborns = chosen_operator(representation, parent_1, parent_2)
                     new_children = [(child, method, parents_info) for child in newborns]
                     children.extend(new_children)
             else:

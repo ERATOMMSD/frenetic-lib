@@ -7,7 +7,7 @@ import pandas as pd
 from freneticlib.core.mutation import abstract_operators
 from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.outcome import Outcome
-from freneticlib.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_representation import RoadRepresentation
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class FreneticCore(object):
 
     def __init__(
         self,
-        representation: RoadGenerator,
+        representation: RoadRepresentation,
         objective: AbstractObjective,
         mutator=None,
         exploiter=None,
@@ -58,7 +58,7 @@ class FreneticCore(object):
             self.df = pd.concat([self.df, pd.DataFrame([record])], ignore_index=True)
 
     def ask(self) -> Iterator[Dict]:
-        """This is actually a python generator, it will produce roads as long as we ask it.
+        """This is actually a python representation, it will produce roads as long as we ask it.
 
         Specifically, it will first create a list of mutants based on the best known individual.
         Then, using the history and the mutants, it will create the crossover children and yield those.

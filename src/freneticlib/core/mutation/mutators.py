@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
-from freneticlib.representations import abstract_generator
+from freneticlib.representations import abstract_representation
 from freneticlib.utils.random import seeded_rng
 
 from .abstract_operators import AbstractMutationOperator, AbstractMutator
@@ -23,7 +23,7 @@ class RemoveFront(AbstractMutationOperator):
         self.remove_at_most = remove_at_most
         self.min_length_for_operator = min_length_for_operator
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         assert self.is_applicable(test)
         return test[seeded_rng().integers(self.remove_at_least, self.remove_at_most) :]
 
@@ -37,7 +37,7 @@ class RemoveBack(AbstractMutationOperator):
         self.remove_at_most = remove_at_most
         self.min_length_for_operator = min_length_for_operator
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         assert len(test) >= self.min_length_for_operator
         return test[: -seeded_rng().integers(self.remove_at_least, self.remove_at_most)]
 
@@ -51,7 +51,7 @@ class RemoveRandom(AbstractMutationOperator):
         self.remove_at_most = remove_at_most
         self.min_length_for_operator = min_length_for_operator
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         assert len(test) >= self.min_length_for_operator
         # number of test to be removed
         k = seeded_rng().integers(self.remove_at_least, self.remove_at_most)
@@ -72,10 +72,10 @@ class AddBack(AbstractMutationOperator):
         self.add_at_least = add_at_least
         self.add_at_most = add_at_most
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         modified_test = test[:]
         for i in range(seeded_rng().integers(self.add_at_least, self.add_at_most)):
-            modified_test.append(generator.get_value(modified_test))
+            modified_test.append(representation.get_value(modified_test))
         return modified_test
 
 
@@ -84,7 +84,7 @@ class ReplaceRandom(AbstractMutationOperator):
         self.replace_at_least = replace_at_least
         self.replace_at_most = replace_at_most
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         # Randomly replace values
         indices = seeded_rng().choice(
             len(test), seeded_rng().integers(self.replace_at_least, self.replace_at_most), replace=False
@@ -92,7 +92,7 @@ class ReplaceRandom(AbstractMutationOperator):
         modified_test = test[:]
 
         for i in sorted(indices):
-            modified_test[i] = generator.get_value(modified_test[:i])
+            modified_test[i] = representation.get_value(modified_test[:i])
         return modified_test
 
 
@@ -113,7 +113,7 @@ class AlterValues(AbstractMutationOperator):
         mutated[mask] = mutated[mask] * factors[mask]
         return mutated
 
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         test = np.array(test)  # force convert test to numpy array
         mutated = test.copy()
 
@@ -124,7 +124,7 @@ class AlterValues(AbstractMutationOperator):
 
 
 class KappaStepAlterValues(AlterValues):
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         test = np.array(test)  # force convert test to numpy array
         mutated = test.copy()
 

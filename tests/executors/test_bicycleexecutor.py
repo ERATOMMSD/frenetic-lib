@@ -4,7 +4,7 @@ from shapely import geometry
 
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
-from freneticlib.representations import cartesian_generator
+from freneticlib.representations import cartesian_representation
 from freneticlib.utils import geometry_utils
 
 test = [(0, 0), (0, 50), (50, 50), (75, 100), (100, 100)]
@@ -19,7 +19,7 @@ def centerline():
 @pytest.fixture
 def bic_executor():
     return BicycleExecutor(
-        representation=cartesian_generator.CatmullRomGenerator(control_nodes=30, variation=5),
+        representation=cartesian_representation.CatmullRomRepresentation(control_nodes=30, variation=5),
         objective=MaxObjective("distance_from_center", per_simulation_aggregator="max"),
     )
 

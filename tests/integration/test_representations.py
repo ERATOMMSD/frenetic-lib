@@ -6,10 +6,10 @@ from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
 from freneticlib.frenetic import Frenetic
 from freneticlib.representations import (
-    bezier_generator,
-    cartesian_generator,
-    kappa_generator,
-    theta_generator,
+    bezier_representation,
+    cartesian_representation,
+    kappa_representation,
+    theta_representation,
 )
 from freneticlib.stopcriteria.counter import CountingStop
 
@@ -44,7 +44,7 @@ class Test_RepresentationIntegration(object):
     """Integration tests (i.e. run for a while)."""
 
     def test_FixStepKappa(self):
-        representation = kappa_generator.FixStepKappaGenerator(length=30, variation=5, step=10.0)
+        representation = kappa_representation.FixStepKappaRepresentation(length=30, variation=5, step=10.0)
 
         frenetic = get_frenetic(representation)
         frenetic.start()
@@ -54,7 +54,7 @@ class Test_RepresentationIntegration(object):
         assert len(df[df.outcome == "ERROR"]) == 0
 
     def test_Kappa(self):
-        representation = kappa_generator.KappaGenerator(length=30, variation=5)
+        representation = kappa_representation.KappaRepresentation(length=30, variation=5)
 
         frenetic = get_frenetic(representation)
         frenetic.start()
@@ -64,7 +64,7 @@ class Test_RepresentationIntegration(object):
         assert len(df[df.outcome == "ERROR"]) == 0
 
     def test_FixStepTheta(self):
-        representation = theta_generator.FixStepThetaGenerator(length=30, variation=5, step=10.0)
+        representation = theta_representation.FixStepThetaRepresentation(length=30, variation=5, step=10.0)
 
         frenetic = get_frenetic(representation)
         frenetic.start()
@@ -74,7 +74,7 @@ class Test_RepresentationIntegration(object):
         assert len(df[df.outcome == "ERROR"]) == 0
 
     def test_Theta(self):
-        representation = theta_generator.ThetaGenerator(length=30, variation=5)
+        representation = theta_representation.ThetaRepresentation(length=30, variation=5)
 
         frenetic = get_frenetic(representation)
         frenetic.start()
@@ -84,7 +84,7 @@ class Test_RepresentationIntegration(object):
         assert len(df[df.outcome == "ERROR"]) == 0
 
     def test_Bezier(self):
-        representation = bezier_generator.BezierGenerator(control_nodes=30, variation=5)
+        representation = bezier_representation.BezierRepresentation(control_nodes=30, variation=5)
 
         frenetic = get_frenetic(representation)
         frenetic.start()
@@ -94,8 +94,8 @@ class Test_RepresentationIntegration(object):
         assert len(df[df.outcome == "ERROR"]) == 0
 
     @pytest.mark.skip(reason="For some reason, Catmull Rom causes problems. Need to fix it eventually")
-    def test_CatmullRomGenerator(self):
-        representation = cartesian_generator.CatmullRomGenerator(control_nodes=30, variation=5)
+    def test_CatmullRomrepresentation(self):
+        representation = cartesian_representation.CatmullRomRepresentation(control_nodes=30, variation=5)
 
         frenetic = get_frenetic(representation)
         frenetic.core.exploiter = exploiters.Exploiter()

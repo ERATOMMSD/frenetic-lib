@@ -1,12 +1,12 @@
 import abc
 from typing import Callable, List
 
-from freneticlib.representations import abstract_generator
+from freneticlib.representations import abstract_representation
 
 
 class AbstractMutationOperator(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, generator: abstract_generator.RoadGenerator, test):
+    def __call__(self, representation: abstract_representation.RoadRepresentation, test):
         pass
 
     def __str__(self):

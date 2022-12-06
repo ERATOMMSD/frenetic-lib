@@ -5,7 +5,7 @@ import numpy as np
 
 from freneticlib.utils.random import seeded_rng
 
-from .abstract_generator import RoadGenerator
+from .abstract_representation import RoadRepresentation
 
 
 def frenet_to_cartesian(x0, y0, theta0, ss, kappas) -> List:
@@ -23,7 +23,7 @@ def frenet_to_cartesian(x0, y0, theta0, ss, kappas) -> List:
     return list(zip(xs, ys))
 
 
-class AbstractKappaGenerator(RoadGenerator, abc.ABC):
+class AbstractKappaRepresentation(RoadRepresentation, abc.ABC):
     def __init__(self, length: int, variation: int = 0, global_bound: float = 0.07, local_bound: float = 0.05):
         self.global_bound = global_bound
         self.local_bound = local_bound
@@ -35,7 +35,7 @@ class AbstractKappaGenerator(RoadGenerator, abc.ABC):
         )
 
 
-class FixStepKappaGenerator(AbstractKappaGenerator):
+class FixStepKappaRepresentation(AbstractKappaRepresentation):
     def __init__(
         self, length: int, variation: int = 0, step: float = 10.0, global_bound: float = 0.0698, local_bound: float = 0.05
     ):
@@ -73,7 +73,7 @@ class FixStepKappaGenerator(AbstractKappaGenerator):
         return test
 
 
-class KappaGenerator(AbstractKappaGenerator):
+class KappaRepresentation(AbstractKappaRepresentation):
     def __init__(
         self,
         length: int,

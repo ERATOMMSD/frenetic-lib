@@ -23,7 +23,7 @@ from freneticlib.core.objective import AbstractObjective
 from freneticlib.executors.abstract_executor import AbstractExecutor
 from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
 from freneticlib.executors.outcome import Outcome
-from freneticlib.representations.abstract_generator import RoadGenerator
+from freneticlib.representations.abstract_representation import RoadRepresentation
 from freneticlib.utils import geometry_utils
 
 FloatDTuple = Tuple[float, float, float, float]
@@ -56,7 +56,7 @@ class BeamNGExecutor(AbstractExecutor):
 
     def __init__(
         self,
-        representation: RoadGenerator,
+        representation: RoadRepresentation,
         objective: AbstractObjective,
         normalizer: AbstractNormalizer = None,
         results_path: Union[str, Path] = None,
