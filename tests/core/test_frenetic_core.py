@@ -32,8 +32,7 @@ class TestFreneticCore_AskTell(object):
 
         core.get_crossover_tests = MagicMock(name="get_crossover_tests")
 
-        test_generator = core.ask()
-        test_dict = next(test_generator)
+        test_dict = core.ask()
 
         assert core.get_mutated_tests.called
         assert core.ask_random.called
@@ -48,9 +47,8 @@ class TestFreneticCore_AskTell(object):
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests")
 
-        test_generator = core.ask()
-        test1 = next(test_generator)
-        test2 = next(test_generator)
+        test1 = core.ask()
+        test2 = core.ask()
 
         assert core.get_mutated_tests.call_count == 1
         assert not core.ask_random.called
@@ -67,10 +65,9 @@ class TestFreneticCore_AskTell(object):
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests", return_value=["CROSSOVER_TEST"])
 
-        test_generator = core.ask()
-        test1 = next(test_generator)
-        test2 = next(test_generator)  # this is the FAIL one.
-        test3 = next(test_generator)
+        test1 = core.ask()
+        test2 = core.ask()  # this is the FAIL one.
+        test3 = core.ask()
 
         assert core.get_mutated_tests.call_count == 1
         assert not core.ask_random.called
@@ -88,9 +85,8 @@ class TestFreneticCore_AskTell(object):
         core.ask_random = MagicMock(name="ask_random")
         core.get_crossover_tests = MagicMock(name="get_crossover_tests", return_value=[tests[1]])
 
-        test_generator = core.ask()
-        test1 = next(test_generator)
-        test2 = next(test_generator)
+        test1 = core.ask()
+        test2 = core.ask()
 
         assert core.get_mutated_tests.call_count == 1
         assert not core.ask_random.called
