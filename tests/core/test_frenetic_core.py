@@ -102,13 +102,13 @@ class TestFreneticCore_AskTell(object):
     def test_tell_insert(self):
         core = FreneticCore(representation=None, objective=None)
         core.tell(record={"acceleration": 0.15, "break": 0.0, "velocity": 22})
-        assert len(core.df) == 1
+        assert len(core.history) == 1
 
     def test_tell_insert_twice(self):
         core = FreneticCore(representation=None, objective=None)
         core.tell(record={"acceleration": 0.15, "break": 0.0, "velocity": 22})
         core.tell(record={"acceleration": 0.14, "break": 0.0, "velocity": 23})
-        assert len(core.df) == 2
+        assert len(core.history) == 2
 
     def test_get_best_parent_None_df(self):
         core = FreneticCore(representation=None, objective=None)
@@ -116,7 +116,7 @@ class TestFreneticCore_AskTell(object):
 
     def test_get_best_parent_empty_df(self):
         core = FreneticCore(representation=None, objective=None)
-        core.df = pd.DataFrame(columns=["acceleration", "break", "velocity"])
+        core.history = pd.DataFrame(columns=["acceleration", "break", "velocity"])
         assert core._get_best_mutation_parent() is None
 
 
@@ -277,7 +277,7 @@ class TestFreneticCore_Mutation(object):
         ]:
             core.tell(rec)
 
-        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[3])
+        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.history.iloc[3])
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         core.get_mutated_tests()
@@ -298,7 +298,7 @@ class TestFreneticCore_Mutation(object):
         ]:
             core.tell(rec)
 
-        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[2])
+        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.history.iloc[2])
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         core.get_mutated_tests()
@@ -320,7 +320,7 @@ class TestFreneticCore_Mutation(object):
         ]:
             core.tell(rec)
 
-        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[2])
+        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.history.iloc[2])
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         assert core.get_mutated_tests() == []
@@ -336,7 +336,7 @@ class TestFreneticCore_Mutation(object):
         ]:
             core.tell(rec)
 
-        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.df.iloc[3])
+        core._get_best_mutation_parent = MagicMock(name="get_best_parent", return_value=core.history.iloc[3])
         core._perform_modifications = MagicMock(name="_perform_modifications")
 
         assert core.get_mutated_tests() == []
@@ -394,8 +394,8 @@ class TestFreneticCore_Crossover(object):
         assert core.get_crossover_tests() == [dict(test=test, method=method, **info)]
 
         #  assert that the parent's indices were increased
-        assert core.df.loc[1].visited == 1
-        assert core.df.loc[3].visited == 1
+        assert core.history.loc[1].visited == 1
+        assert core.history.loc[3].visited == 1
 
         assert core._select_crossover_candidates.called
         assert core.crossover.called

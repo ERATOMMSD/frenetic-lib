@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from shapely import geometry, ops
 
-from freneticlib.executors.abstract_executor import AbstractExecutor
+from freneticlib.executors.executor import Executor
 from freneticlib.executors.outcome import Outcome
 from freneticlib.utils import geometry_utils
 
@@ -14,7 +14,7 @@ from . import carlapidonbicycle as cpb
 logger = logging.getLogger(__name__)
 
 
-class BicycleExecutor(AbstractExecutor):
+class BicycleExecutor(Executor):
     # the features that the simplified bicycle model calculates. use them directly or calculate other values.
     CALCULATED_FEATURES = [
         "pxs",
@@ -43,7 +43,6 @@ class BicycleExecutor(AbstractExecutor):
 
     def _execute(self, test: List) -> Dict:
         cartesian = self.representation.to_cartesian(test)
-
         original_line = geometry.LineString(np.array(cartesian))
         interpolated_line = geometry_utils.cubic_spline(original_line)
 

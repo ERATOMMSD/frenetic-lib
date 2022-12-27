@@ -19,10 +19,10 @@ import numpy as np
 import pandas as pd
 from shapely import geometry
 
-from freneticlib.core.objective import AbstractObjective
-from freneticlib.executors.abstract_executor import AbstractExecutor
-from freneticlib.executors.normalizers.abstract_normalizer import AbstractNormalizer
+from freneticlib.core.objective import Objective
+from freneticlib.executors.executor import Executor
 from freneticlib.executors.outcome import Outcome
+from freneticlib.executors.road_validator import RoadValidator
 from freneticlib.representations.abstract_representation import RoadRepresentation
 from freneticlib.utils import geometry_utils
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 KMH_TO_MS_FACTOR = 0.277778
 
 
-class BeamNGExecutor(AbstractExecutor):
+class BeamNGExecutor(Executor):
     CALCULATED_FEATURES = [
         "timer",
         "pos",
@@ -57,17 +57,19 @@ class BeamNGExecutor(AbstractExecutor):
     def __init__(
         self,
         representation: RoadRepresentation,
-        objective: AbstractObjective,
-        normalizer: AbstractNormalizer = None,
+        objective: Objective,
         results_path: Union[str, Path] = None,
         cps_pipeline_path: Union[str, Path] = None,
         beamng_home=None,
         beamng_user=None,
+
         oob_tolerance: float = 0.95,
         max_speed_in_kmh: int = 70,
         risk_value: float = 0.7,
+
+        road_valildator = None
     ):
-        super().__init__(representation, objective, normalizer, results_path)
+        super().__init__(representation, objective, results_path, road_valildator)
 
         cps_pipeline_path = Path(cps_pipeline_path).expanduser()
         print(cps_pipeline_path)
@@ -92,6 +94,7 @@ class BeamNGExecutor(AbstractExecutor):
         self.last_observation = None
         # Not sure how to set this... How far can a car move in 250 ms at 5Km/h
         self.min_delta_position = 1.0
+        self.road_width = 8.0
 
     def _execute(self, test: List) -> Dict:
         logger.info(f"Executing test {test}")
@@ -99,7 +102,7 @@ class BeamNGExecutor(AbstractExecutor):
         cartesian = self.representation.to_cartesian(test)
         original_line = geometry.LineString(np.array(cartesian))
         interpolated_points = geometry_utils.cubic_spline(original_line).xy
-        beamng_format = [(x, y, -28.0, 8.0) for x, y in zip(*interpolated_points)]  # as shown in tests_generation.py
+        beamng_format = [(x, y, -28.0, self.road_width) for x, y in zip(*interpolated_points)]  # as shown in tests_generation.py
 
         # TODO Not sure why we need to repeat this 2 times...
         counter = 2

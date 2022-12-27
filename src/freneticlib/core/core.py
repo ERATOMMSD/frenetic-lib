@@ -5,7 +5,7 @@ from typing import Dict, Iterator, List
 import pandas as pd
 
 from freneticlib.core.mutation import abstract_operators
-from freneticlib.core.objective import AbstractObjective
+from freneticlib.core.objective import Objective
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_representation import RoadRepresentation
 
@@ -15,17 +15,18 @@ logger = logging.getLogger(__name__)
 class FreneticCore(object):
     """The core module of frenetic-lib. It handles the representation"""
 
-    df: pd.DataFrame = None
+    history: pd.DataFrame = None
     """Stores the history including road, execution outcome and parent info."""
 
     def __init__(
         self,
         representation: RoadRepresentation,
-        objective: AbstractObjective,
+        objective: Objective,
         mutator=None,
         exploiter=None,
         crossover=None,
     ):
+        self._mutant_generator = None
         self.representation = representation
         self.objective = objective
 
@@ -50,15 +51,20 @@ class FreneticCore(object):
         return dict(test=test, method="random", visited=0, generation=0)
 
     def tell(self, record: Dict):
-        logger.debug("Tell:")  # {road} -> {result}")
-        if self.df is None:
-            self.df = pd.DataFrame([record])
+        logger.debug(f"Tell: {record}")  # {road} -> {result}")
+        if self.history is None:
+            self.history = pd.DataFrame([record])
         else:
             # self.df = self.df.append(record, ignore_index=True)
-            self.df = pd.concat([self.df, pd.DataFrame([record])], ignore_index=True)
+            self.history = pd.concat([self.history, pd.DataFrame([record])], ignore_index=True)
 
-    def ask(self) -> Iterator[Dict]:
-        """This is actually a python representation, it will produce roads as long as we ask it.
+    def ask(self) -> Dict:
+        if self._mutant_generator is None:
+            self._mutant_generator = self._ask()
+        return next(self._mutant_generator)
+
+    def _ask(self) -> Iterator[Dict]:
+        """This is actually a generator, it will produce roads as long as we ask it.
 
         Specifically, it will first create a list of mutants based on the best known individual.
         Then, using the history and the mutants, it will create the crossover children and yield those.
@@ -90,7 +96,7 @@ class FreneticCore(object):
             #     self.parents_recombination()
             #     self.executed_count = 0
 
-            self.objective.recalculate_dynamic_threshold(self.df)
+            self.objective.recalculate_dynamic_threshold(self.history)
 
     def get_mutated_tests(self) -> List:
         """Returns a list of tests"""
@@ -106,7 +112,7 @@ class FreneticCore(object):
         #     return []
 
         logger.debug(f"Best unvisited parent for mutation is {parent.index[0]}")
-        self.df.at[parent.name, "visited"] = 1
+        self.history.at[parent.name, "visited"] = 1
 
         if self.exploiter and parent.outcome == Outcome.FAIL:
             return self._perform_modifications(self.exploiter, parent, stop_reproduction=True)
@@ -142,11 +148,11 @@ class FreneticCore(object):
         return modified_tests
 
     def _get_best_mutation_parent(self) -> pd.Series:
-        if self.df is None or len(self.df) <= 0:
+        if self.history is None or len(self.history) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
             return None
 
-        assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
+        assert self.objective.feature in self.history.columns, "Target feature is recorded in history records."
 
         # we take the best parent that hasn't been visited yet, whose feature is below/above the threshold
         selection = self._select_by_maxvisits_and_threshold(max_visits=0)
@@ -162,14 +168,14 @@ class FreneticCore(object):
         return self.objective.get_best(selection)
 
     def _select_by_maxvisits_and_threshold(self, max_visits=0):
-        pass_fail_filter = self.df.outcome.isin(
+        pass_fail_filter = self.history.outcome.isin(
             [Outcome.PASS, Outcome.FAIL]
         )  # TODO: this is domain-specific and needs to be dropped
-        max_visit_filter = self.df.visited <= max_visits
-        return self.objective.filter_by_threshold(self.df[pass_fail_filter & max_visit_filter])
+        max_visit_filter = self.history.visited <= max_visits
+        return self.objective.filter_by_threshold(self.history[pass_fail_filter & max_visit_filter])
 
     def get_parent_info(self, p_index) -> Dict:
-        parent = self.df.iloc[p_index]
+        parent = self.history.iloc[p_index]
         return {
             "parent_1_index": p_index,
             "parent_1_outcome": parent["outcome"],
@@ -190,23 +196,23 @@ class FreneticCore(object):
 
         child_tests = []
         for child, method, info in self.crossover(self.representation, candidates):
-            self.df.at[info["parent_1_index"], "visited"] = self.df.iloc[info["parent_1_index"]]["visited"] + 1
-            self.df.at[info["parent_2_index"], "visited"] = self.df.iloc[info["parent_2_index"]]["visited"] + 1
+            self.history.at[info["parent_1_index"], "visited"] = self.history.iloc[info["parent_1_index"]]["visited"] + 1
+            self.history.at[info["parent_2_index"], "visited"] = self.history.iloc[info["parent_2_index"]]["visited"] + 1
             child_tests.append(dict(test=child, method=method, **info))
         return child_tests
 
     def _select_crossover_candidates(self) -> List:
-        if len(self.df) <= 0:
+        if len(self.history) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
             return []
 
-        assert self.objective.feature in self.df.columns, "Target feature is recorded in history records."
+        assert self.objective.feature in self.history.columns, "Target feature is recorded in history records."
 
         selection = self._select_by_maxvisits_and_threshold(self.crossover_max_visits)
         if not self.crossover.is_applicable(selection):
             logger.warning(
                 "Couldn't select enough tests to generate crossover candidates. "
-                + f"Select: {len(selection)}, Crossover min size: {self.crossover.min_size}"
+                + f"Select: {len(selection)}, Crossover min size: {self.crossover.min_number_candidates_for_crossover}"
             )
             return []
 

@@ -3,13 +3,13 @@ import random
 import time
 from plistlib import Dict
 
-from freneticlib.executors.abstract_executor import AbstractExecutor
+from freneticlib.executors.executor import Executor
 from freneticlib.utils.random import seeded_rng
 
 logger = logging.getLogger(__name__)
 
 
-class MockExecutor(AbstractExecutor):
+class MockExecutor(Executor):
     """Inspired by SBST pipeline"""
 
     def _execute(self, the_test) -> Dict:

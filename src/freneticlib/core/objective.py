@@ -9,7 +9,7 @@ from freneticlib.executors.outcome import Outcome
 logger = logging.getLogger(__name__)
 
 
-class AbstractObjective(abc.ABC):
+class Objective(abc.ABC):
     """Objective base class. Don't use."""
 
     def __init__(
@@ -70,7 +70,7 @@ class AbstractObjective(abc.ABC):
         pass
 
 
-class MaxObjective(AbstractObjective):
+class MaxObjective(Objective):
     """For the specification to maximize a given feature."""
 
     def __init__(self, *args, **kwargs):
@@ -104,11 +104,11 @@ class MaxObjective(AbstractObjective):
                 self.threshold = new_value
 
 
-class MinObjective(AbstractObjective):
+class MinObjective(Objective):
     """For the specification to minimize a given feature."""
 
     def __init__(self, *args, **kwargs):
-        """Constructor for MinObjective. Forwards arguments to `AbstractObjective`.
+        """Constructor for MinObjective. Forwards arguments to `Objective`.
 
         Args:
             *args: Arguments that are forwarded to super constructor.

@@ -49,7 +49,7 @@ class Test_RepresentationIntegration(object):
         frenetic = get_frenetic(representation)
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0
 
@@ -59,7 +59,7 @@ class Test_RepresentationIntegration(object):
         frenetic = get_frenetic(representation)
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0
 
@@ -69,7 +69,7 @@ class Test_RepresentationIntegration(object):
         frenetic = get_frenetic(representation)
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0
 
@@ -79,7 +79,7 @@ class Test_RepresentationIntegration(object):
         frenetic = get_frenetic(representation)
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0
 
@@ -89,7 +89,7 @@ class Test_RepresentationIntegration(object):
         frenetic = get_frenetic(representation)
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0
 
@@ -101,6 +101,6 @@ class Test_RepresentationIntegration(object):
         frenetic.core.exploiter = exploiters.Exploiter()
         frenetic.start()
 
-        df = frenetic.core.df
+        df = frenetic.core.history
         assert len(df) == 200
         assert len(df[df.outcome == "ERROR"]) == 0

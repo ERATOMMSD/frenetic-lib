@@ -3,18 +3,18 @@ import logging
 from pathlib import Path
 from typing import Dict, Union
 
-from freneticlib.core.objective import AbstractObjective
+from freneticlib.core.objective import Objective
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_representation import RoadRepresentation
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractExecutor(abc.ABC):
+class Executor(abc.ABC):
     def __init__(
         self,
         representation: RoadRepresentation,
-        objective: AbstractObjective,
+        objective: Objective,
         results_path: Union[str, Path] = None,
     ):
         self.representation = representation
