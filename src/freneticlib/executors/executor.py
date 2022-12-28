@@ -38,7 +38,7 @@ class Executor(abc.ABC):
         test = test_dict["test"]
 
         if self.road_validator:
-            valid, invalid_info = self.road_validator.is_valid(test)
+            valid, invalid_info = self.road_validator.is_valid(test, self)
             if not valid:
                 logger.debug("The generated road is invalid")
                 test_dict.update({self.objective.feature: None, "outcome": Outcome.INVALID, "info": invalid_info})

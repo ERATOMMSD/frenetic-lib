@@ -22,7 +22,6 @@ from shapely import geometry
 from freneticlib.core.objective import Objective
 from freneticlib.executors.executor import Executor
 from freneticlib.executors.outcome import Outcome
-from freneticlib.executors.road_validator import RoadValidator
 from freneticlib.representations.abstract_representation import RoadRepresentation
 from freneticlib.utils import geometry_utils
 
@@ -62,12 +61,10 @@ class BeamNGExecutor(Executor):
         cps_pipeline_path: Union[str, Path] = None,
         beamng_home=None,
         beamng_user=None,
-
         oob_tolerance: float = 0.95,
         max_speed_in_kmh: int = 70,
-        risk_value: float = 0.7,
-
-        road_valildator = None
+        risk_value: float=0.7,
+        road_valildator=None
     ):
         super().__init__(representation, objective, results_path, road_valildator)
 

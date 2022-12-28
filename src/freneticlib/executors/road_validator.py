@@ -10,6 +10,7 @@ from typing import Tuple
 import numpy as np
 import shapely
 from shapely import geometry, BufferCapStyle, BufferJoinStyle
+
 from freneticlib.utils import geometry_utils
 
 
@@ -47,22 +48,21 @@ def min_radius(x, w=5):
     if mr == np.inf:
         mr = 0
 
-    return mr * 3.280839895  #, mincurv
+    return mr * 3.280839895
 
 
 class RoadValidator(object):
 
-    def __init__(self, executor: "Exectutor"):
-        self.executor = executor
+    def __init__(self):
         self.map_size = 200
         self.road_min_length = 20
 
-    def is_valid(self, test) -> Tuple[bool,str]:
-        cartesian = self.executor.representation.to_cartesian(test)
+    def is_valid(self, test, executor) -> Tuple[bool,str]:
+        cartesian = executor.representation.to_cartesian(test)
         original_line = geometry.LineString(np.array(cartesian))
         interpolated_line = geometry_utils.cubic_spline(original_line)
 
-        road_polygon = interpolated_line.buffer(self.executor.road_width,
+        road_polygon = interpolated_line.buffer(executor.road_width,
                                                 cap_style=BufferCapStyle.flat.value,
                                                 join_style=BufferJoinStyle.round.value)
 
