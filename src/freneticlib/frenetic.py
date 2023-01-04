@@ -33,8 +33,10 @@ class Frenetic(object):
         logger.info("-------------------------------------------")
         while self.stop_criterion.is_random_phase:
             test_dict = self.core.ask_random()
-            self.stop_criterion.execute_test(test_dict)
+            test_dict["test_id"] = 0 if self.core.history is None else len(self.core.history)
+
             result_dict = self.executor.execute_test(test_dict)
+            self.stop_criterion.execute_test(test_dict)
             self.core.tell(result_dict)
         logger.info("--------------------------------------------")
         logger.info("Finishing Initial Random Generation Phase...")
@@ -44,8 +46,9 @@ class Frenetic(object):
 
         while not self.stop_criterion.is_over:
             test_dict = self.core.ask()
-            self.stop_criterion.execute_test(test_dict)
+            test_dict["test_id"] = 0 if self.core.history is None else len(self.core.history)
             result_dict = self.executor.execute_test(test_dict)
+            self.stop_criterion.execute_test(test_dict)
             self.core.tell(result_dict)
         else:
             logger.info("---------------------------")
@@ -64,7 +67,7 @@ class Frenetic(object):
         logger.info(f"Reading {filename} into the history.")
         self.core.history = pd.read_csv(filename)
 
-    def plot(self, filename: str = None):
+    def plot(self, filename: str = None, **kwargs):
         """Very simple plotting facility.
 
         Creates a line plot showing the objective feature's value for each simulation.
@@ -76,8 +79,8 @@ class Frenetic(object):
         feature = self.core.objective.feature
 
         # plot random part
-        ax = self.core.history[self.core.history.method == "random"].plot(y=feature, color="gray", grid=True, ylabel=feature)
-        ax = self.core.history[self.core.history.method != "random"].plot(ax=ax, y=feature, color="blue", grid=True, ylabel=feature)
+        ax = self.core.history[self.core.history.method == "random"].plot(y=feature, color="gray", grid=True, ylabel=feature, xlabel="# Simulations", **kwargs)
+        ax = self.core.history[self.core.history.method != "random"].plot(ax=ax, y=feature, color="blue", grid=True, ylabel=feature ,xlabel="# Simulations", **kwargs)
         ax.legend(["random", "mutation"])
         if filename:
             plt.savefig(filename)

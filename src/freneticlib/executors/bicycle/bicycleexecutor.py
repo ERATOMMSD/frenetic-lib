@@ -3,6 +3,8 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from shapely import geometry, ops
 
 from freneticlib.executors.executor import Executor
@@ -78,6 +80,19 @@ class BicycleExecutor(Executor):
 
         # store data
         if self.results_path:
+            # Save the figures
+            fig1, ax1 = plt.subplots()
+            ax1.axis('equal')
+            ax1.plot(*interpolated_line.xy, "--", "b")
+            ax1.scatter(x=records_df["pxs"], y=records_df["pys"], color="red")
+            fig1.tight_layout()
+            fig1.savefig(self.results_path / f"road_{self.exec_counter}.png")
+
+            fig1.clear()
+            plt.close(fig1)
+
+            # save the data records
             records_df.to_csv(self.results_path / f"sim_record_{self.exec_counter}.csv")
+
 
         return return_value

@@ -1,5 +1,6 @@
 import pytest
 
+from freneticlib.executors.outcome import Outcome
 from freneticlib.stopcriteria.counter import CountingStop
 
 
@@ -16,19 +17,19 @@ class TestCountingStop(object):
         for _ in range(n_random):
             assert stop.is_random_phase
             assert not stop.is_over
-            stop.execute_test(None)
+            stop.execute_test({"outcome": Outcome.PASS})
 
         # execute until it's over
         for _ in range(n_total - n_random):
             assert not stop.is_random_phase
             assert not stop.is_over
-            stop.execute_test(None)
+            stop.execute_test({"outcome": Outcome.FAIL})
 
         # what if we do more?
         for _ in range(5):
             assert not stop.is_random_phase
             assert stop.is_over
-            stop.execute_test(None)
+            stop.execute_test({"outcome": Outcome.PASS})
 
     @pytest.mark.parametrize("exec_count", [None, 0, 1, 4])
     def test_is_over_returns_False(self, exec_count):
@@ -63,12 +64,12 @@ class TestCountingStop(object):
         stop = CountingStop(n_total=5, n_random=5)
         if exec_count is not None:
             stop.exec_count = exec_count
-        stop.execute_test(None)
+        stop.execute_test({"outcome": Outcome.PASS})
         assert stop.exec_count == expected
 
     def test_random_higher_than_total(self):
         stop = CountingStop(n_total=5, n_random=10)
         for _ in range(6):
-            stop.execute_test(None)
+            stop.execute_test({"outcome": Outcome.FAIL})
         assert stop.is_over
         assert stop.is_random_phase

@@ -10,7 +10,7 @@ def cubic_spline(
     rounding_precision: int = 3,
     k: int = 3,
     min_num_nodes: int = 20,
-):
+) -> geom.LineString:
     # This is an approximation based on whatever input is given
     pos_tck, pos_u = interpolate.splprep(line.xy, s=smoothness, k=k)
 
