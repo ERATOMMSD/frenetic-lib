@@ -10,7 +10,7 @@ from freneticlib.representations.kappa_representation import FixStepKappaReprese
 from freneticlib.stopcriteria.counter import CountingStop
 
 # specify a logging format
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s %(message)s", datefmt="%H:%M:%S")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s", datefmt="%H:%M:%S")
 
 
 def run_example():
@@ -53,10 +53,10 @@ def run_example():
     frenetic.start()
 
     # store the results for later use
-    frenetic.store_results("./sink/dev.csv")
+    frenetic.store_results("./data/history.csv")
 
     # Display the progress
-    frenetic.plot()
+    frenetic.plot("./data/plot.png")
 
 
 if __name__ == "__main__":
