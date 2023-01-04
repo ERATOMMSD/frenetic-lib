@@ -138,7 +138,7 @@ class FreneticCore(object):
                     mutated_test = self.representation.fix(mutated_test)
                     if not self.representation.is_valid(mutated_test):
                         logger.warning("Couldn't fix the test.")
-                        import pdb; pdb.set_trace()
+                        # import pdb; pdb.set_trace()
                         continue
                 modified_tests.append(dict(test=mutated_test, method=str(operator), **test_info))
 
