@@ -1,4 +1,5 @@
 import logging
+import pathlib
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -60,6 +61,7 @@ class Frenetic(object):
     def store_results(self, filename: str):
         """Store the results in a CSV file."""
         logger.info(f"Storing the all the experiment results in file {filename}.")
+        pathlib.Path(filename).parent.mkdir(exist_ok=True)
         self.core.history.to_csv(filename)  # , indent=4)
 
     def load_history(self, filename: str):
@@ -83,6 +85,7 @@ class Frenetic(object):
         ax = self.core.history[self.core.history.method != "random"].plot(ax=ax, y=feature, color="blue", grid=True, ylabel=feature ,xlabel="# Simulations", **kwargs)
         ax.legend(["random", "mutation"])
         if filename:
+            pathlib.Path(filename).parent.mkdir(exist_ok=True)
             plt.savefig(filename)
         else:
             plt.show()
