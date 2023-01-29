@@ -5,52 +5,72 @@ from typing import Dict, Iterator, List
 import pandas as pd
 
 from freneticlib.core.mutation import abstract_operators
+from freneticlib.core.mutation.crossovers import AbstractCrossover
 from freneticlib.core.objective import Objective
 from freneticlib.executors.outcome import Outcome
 from freneticlib.representations.abstract_representation import RoadRepresentation
 
 logger = logging.getLogger(__name__)
 
+TestIndividual = Dict
+"""The type that contains a road and its execution data."""
+
 
 class FreneticCore(object):
-    """The core module of frenetic-lib. It handles the representation"""
+    """The core module of freneticlib, implementing the genetic algorithm."""
 
     history: pd.DataFrame = None
     """Stores the history including road, execution outcome and parent info."""
+
+    crossover_max_visits = 10
+    """How many times an individual road can be selected as crossover parent, before it is "retired'."""
 
     def __init__(
         self,
         representation: RoadRepresentation,
         objective: Objective,
-        mutator=None,
-        exploiter=None,
-        crossover=None,
+        mutator: abstract_operators.AbstractMutator = None,
+        crossover: AbstractCrossover = None,
     ):
+        """
+        Args:
+            representation (RoadRepresentation): The selected road representation.
+            objective (Objective): The search objective. (Make sure it's the same as the one passed to the Executor).
+            mutator (AbstractMutator): Holds the mutation operators for roads with :attr:`.Outcome.PASS`.
+            exploiter (AbstractMutator): Special treatment to differently mutate roads with :attr:`.Outcome.FAIL`.
+            crossover (AbstractCrossover): Defines which crossover operator(s) to apply.
+        """
         self._mutant_generator = None
         self.representation = representation
         self.objective = objective
 
         self.mutator = mutator
-        self.exploiter = exploiter
         self.crossover = crossover
 
         # Warnings when operators are None
-        self._warn_if_none(crossover, "crossover")
-        self._warn_if_none(mutator, "mutator")
-        self._warn_if_none(exploiter, "exploiter")
+        if not mutator:
+            logger.warning("No mutator was chosen.")
+        if not crossover:
+            logger.warning("No crossover was chosen.")
 
-        self.crossover_max_visits = 10
+    def ask_random(self) -> TestIndividual:
+        """Returns a random road in the specific road representation.
 
-    def _warn_if_none(self, var, name):
-        if not var:
-            logger.warning(f"No {name} operator was chosen.")
-
-    def ask_random(self) -> Dict:
+        Returs:
+            (TestIndividual): A new, randomly generated road from :attr:`.representation`.
+        """
         test = self.representation.generate()
         assert self.representation.is_valid(test), "The newly generated test should be valid."
         return dict(test=test, method="random", visited=0, generation=0)
 
-    def tell(self, record: Dict):
+    def tell(self, record: TestIndividual):
+        """
+        Register the result of an execution.
+
+        Args:
+            record (TestIndividual): A dict containing the road and execution data (outcome, feature value, ...).
+        """
+
         logger.debug(f"Tell: {record}")  # {road} -> {result}")
         if self.history is None:
             self.history = pd.DataFrame([record])
@@ -58,7 +78,8 @@ class FreneticCore(object):
             # self.df = self.df.append(record, ignore_index=True)
             self.history = pd.concat([self.history, pd.DataFrame([record])], ignore_index=True)
 
-    def ask(self) -> Dict:
+    def ask(self) -> TestIndividual:
+        """Create """
         if self._mutant_generator is None:
             self._mutant_generator = self._ask()
         return next(self._mutant_generator)
@@ -70,7 +91,7 @@ class FreneticCore(object):
         Then, using the history and the mutants, it will create the crossover children and yield those.
 
         Yields:
-            dict: A dictionary containing a road and additional information of the test.
+            (dict): A dictionary containing a road and additional information of the test.
         """
         while True:
             # First we mutate (or generate random)
@@ -98,8 +119,15 @@ class FreneticCore(object):
 
             self.objective.recalculate_dynamic_threshold(self.history)
 
-    def get_mutated_tests(self) -> List:
-        """Returns a list of tests"""
+    def get_mutated_tests(self) -> List[TestIndividual]:
+        """
+        Searches for the best mutation parent, then performs a mutation depending on the parent's
+        simulation outcome. :attr:`self.exploiter` will be applied if :attr:`.Outcome.FAIL`,
+        :attr:`.Outcome.PASS` will trigger the :attr:`self.mutator`
+
+        Returns:
+            (List[TestIndividual]): The mutated test individuals.
+        """
         parent = self._get_best_mutation_parent()  # returns a row
         if parent is None:
             logger.warning("Couldn't find a good parent. Skipping.")
@@ -111,41 +139,16 @@ class FreneticCore(object):
         #     logger.debug("Best parent's test is too short.")
         #     return []
 
-        logger.debug(f"Best unvisited parent for mutation is {parent.index[0]}")
+        logger.debug(f"Best unvisited parent for mutation is {parent.name}")
         self.history.at[parent.name, "visited"] = 1
 
-        if self.exploiter and parent.outcome == Outcome.FAIL:
-            return self._perform_modifications(self.exploiter, parent, stop_reproduction=True)
-        elif self.mutator and parent.outcome == Outcome.PASS:
-            return self._perform_modifications(self.mutator, parent)
-        else:
-            logger.warning("No modification was applied because there is neither an exploiter nor a mutator defined.")
-            return []
+        parent_info = self.get_parent_info(parent.name)
 
-    def _perform_modifications(self, mutator: abstract_operators.AbstractMutator, parent, stop_reproduction=False) -> list:
-        if parent.test is None:
-            return []
+        mutants = self.mutator(self.representation, parent)
+        for m in mutants:
+            m.update(parent_info)
 
-        test_info = self.get_parent_info(parent.name)
-        test_info["visited"] = 1 if stop_reproduction else 0
-
-        modified_tests = []
-        for operator in mutator.get_all():
-            try:
-                mutated_test = operator(self.representation, parent.test)
-                if not self.representation.is_valid(mutated_test):
-                    logger.debug(f"Mutation operator {str(operator)} produced an invalid test. Attempting to fix it.")
-                    mutated_test = self.representation.fix(mutated_test)
-                    if not self.representation.is_valid(mutated_test):
-                        logger.warning("Couldn't fix the test.")
-                        # import pdb; pdb.set_trace()
-                        continue
-                modified_tests.append(dict(test=mutated_test, method=str(operator), **test_info))
-
-            except Exception:
-                logger.error(f"Error during modification of test {test_info} during function {str(operator)}", exc_info=True)
-
-        return modified_tests
+        return mutants
 
     def _get_best_mutation_parent(self) -> pd.Series:
         if self.history is None or len(self.history) <= 0:
@@ -183,7 +186,15 @@ class FreneticCore(object):
             "generation": parent["generation"] + 1,
         }
 
-    def get_crossover_tests(self) -> List:
+    def get_crossover_tests(self) -> List[TestIndividual]:
+        """
+        Creates new tests by pairwise "mating" of
+        simulation outcome. :attr:`self.exploiter` will be applied if :attr:`.Outcome.FAIL`,
+        :attr:`.Outcome.PASS` will trigger the :attr:`self.mutator`
+
+        Returns:
+            (List[TestIndividual]): The mutated test individuals.
+        """
         if self.crossover is None:
             logger.info("No crossover defined. Skipping.")
             return []
@@ -201,7 +212,7 @@ class FreneticCore(object):
             child_tests.append(dict(test=child, method=method, **info))
         return child_tests
 
-    def _select_crossover_candidates(self) -> List:
+    def _select_crossover_candidates(self) -> List[TestIndividual]:
         if len(self.history) <= 0:
             logger.warning("Empty history. Cannot get best parent.")
             return []

@@ -5,6 +5,7 @@ from freneticlib.core.mutation import exploiters, crossovers
 from freneticlib.core.mutation.mutators import FreneticMutator
 from freneticlib.core.objective import MaxObjective
 from freneticlib.executors.bicycle.bicycleexecutor import BicycleExecutor
+from freneticlib.executors.road_validator import RoadValidator
 from freneticlib.frenetic import Frenetic
 from freneticlib.representations.kappa_representation import FixStepKappaRepresentation
 from freneticlib.stopcriteria.counter import CountingStop
@@ -16,12 +17,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 def run_example():
     # We want a FixStep Kappa representation
     representation = FixStepKappaRepresentation(length=30, variation=5, step=10.0)
+    # alternative:
     # representation = CatmullRomRepresentation(control_nodes=30, variation=5)
 
     # Setup an objective. Here: maximize the distance_from_center (i.e. push the vehicle off the road)
     objective = MaxObjective(
         feature="distance_from_center",
-        # every simulation produces 10 records per second, we extract the maximum of this
+        # every simulation produces 10 records per second, we extract the maximum value of the selected feature
         per_simulation_aggregator="max",
     )
 
@@ -30,18 +32,13 @@ def run_example():
         representation=representation,
         objective=objective,
         mutator=FreneticMutator(),
-        exploiter=exploiters.Exploiter([
-            exploiters.ReverseTest(),
-            exploiters.SplitAndSwap(),
-            exploiters.FlipSign()
-        ]),
         crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )
 
     # Define the Frenetic executor and the stop-criterion.
     frenetic = Frenetic(
         core,
-        BicycleExecutor(
+        executor=BicycleExecutor(
             representation=representation,
             objective=objective,
             # results_path="./sink/detailed"
@@ -49,10 +46,13 @@ def run_example():
         CountingStop(n_random=50, n_total=250),
     )
 
+    # If we wanted to extend a previous run, we could load the history like so:
+    # frenetic.load_history("./data/dev.csv")
+
     # run the search
     frenetic.start()
 
-    # store the results for later use
+    # store the history for later use
     frenetic.store_results("./data/history.csv")
 
     # Display the progress

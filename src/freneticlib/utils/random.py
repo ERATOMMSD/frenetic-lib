@@ -5,12 +5,13 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
+GLOBAL_RNG = None
 """
-GLOBAL_RNG (np.random.Generator):
+GLOBAL_RNG (np.random.Generator)
     A variable storing the globally set RNG.
     Defaults to None before first call to `seeded_rng`.
 """
-GLOBAL_RNG = None
 
 
 def seeded_rng(seed: int = None) -> np.random.Generator:

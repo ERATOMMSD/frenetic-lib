@@ -12,6 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_test_similarity(parent_1, parent_2) -> float:
+    """Calculate the similarity of two roads.
+
+    Args:
+        parent_1: First operand.
+        parent_2: Second operand.
+
+    Returns:
+        (float): The similarity factor.
+    """
     min_len = min(len(parent_1), len(parent_2))
     same_count = 0
     for i in range(min_len):
@@ -21,6 +30,15 @@ def calculate_test_similarity(parent_1, parent_2) -> float:
 
 
 def combine_parents_info(parent_1_info, parent_2_info) -> Dict:
+    """Combine the information of two roads, so we can trace where crossover offspring was generated from.
+
+    Args:
+        parent_1_info: First parent's information-dict.
+        parent_2_info: Second parent's information-dict.
+
+    Returns:
+        (Dict): The combined information of both parents.
+    """
     info = {}
     info.update(parent_1_info)
     for k, v in parent_2_info.items():
@@ -35,22 +53,46 @@ def combine_parents_info(parent_1_info, parent_2_info) -> Dict:
 
 
 class AbstractCrossoverOperator(abc.ABC):
+    """Abstract parent of all crossover operators."""
     def __init__(self):
         pass
 
     @abc.abstractmethod
     def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
+        """
+        Create a new road by combining road points from two parents.
+
+        Args:
+            representation (RoadRepresentation): The road representation used in this search.
+            parent_1: The first operand for the crossover.
+            parent_2: The second operand for the crossover.
+
+        Returns:
+            The offspring, i.e. combination of both parent roads.
+        """
         pass
 
     def __str__(self):
         return self.__class__.__name__
 
     def is_applicable(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2) -> bool:
+        """
+        Check if test can be mutated.
+
+        Args:
+            test: The road (in a given representation).
+
+        Returns:
+            (bool): Whether the mutation operator is applicable.
+        """
         return True
 
 
 class ChromosomeCrossover(AbstractCrossoverOperator):
-    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
+    """
+    Crossover operator that creates two new roads by randomly selecting roads from both parents.
+    """
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2) -> List:
         min_len = min(len(parent_1), len(parent_2))
         np_arr = np.array([parent_1[:min_len], parent_2[:min_len]])  # crop to min_len and make to numpy array
         children = seeded_rng().permuted(np_arr)  # permutate along axis using numpy
@@ -58,7 +100,19 @@ class ChromosomeCrossover(AbstractCrossoverOperator):
 
 
 class SinglePointCrossover(AbstractCrossoverOperator):
-    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2):
+    """
+    Crossover operator that creates two new roads by (roughly) splitting both roads in half,
+    and combining each "head" with the respective other tail.
+
+    For example, given that
+    ``R1 = [A, B, C, D, E, F, G]`` and
+    ``R2 = [1, 2, 3, 4, 5, 6, 7]``
+
+    then ``R1 x R2`` yields, eg.
+    ``C1 = [A, B, C, D, 5, 6, 7]`` and
+    ``C2 = [1, 2, 3, 4, E, F, G]``
+    """
+    def __call__(self, representation: abstract_representation.RoadRepresentation, parent_1, parent_2) -> List:
         # more or less in the middle
         amount = min(len(parent_1) // 2 - 2, len(parent_2) // 2 - 2)
         variability = seeded_rng().integers(-amount, amount)
@@ -71,20 +125,51 @@ class SinglePointCrossover(AbstractCrossoverOperator):
 
 
 class AbstractCrossover(abc.ABC):
+    """A container class for the crossover operators, selection strategy is implemented in :meth:`__call__`"""
+
     def __init__(self, operators: List[AbstractCrossoverOperator] = None):
         self.operators = operators
 
     @abc.abstractmethod
     def __call__(self, representation: abstract_representation.RoadRepresentation, parent_candidates: List) -> List:
+        """
+        Apply crossover to a list of parent candidates.
+
+        Args:
+            representation (RoadRepresentation): The road representation used in this search.
+            parent_candidates (List): The parents that we take into consideration for producing offspring.
+
+        Returns:
+            (List): A list of offspring roads that were created by mating parent_candidates.
+        """
         pass
 
     def is_applicable(self, parent_candidates: List) -> bool:
+        """
+        Check if it is possible to mate the parent_candidates.
+        Args:
+            parent_candidates (List): The parents that we take into consideration for producing offspring.
+
+        Returns:
+            (bool): If it is possible to mate those parents, or if there is an issue.
+        """
         return True
 
 
 class ChooseRandomCrossoverOperator(AbstractCrossover):
+    """A container class that randomly chooses between a list of crossover operators.
+
+    By default, the operator is chosen randomly from :class:`ChromosomeCrossover` and :class:`SinglePointCrossover`.
+    """
+
     def __init__(self, operators: List[AbstractCrossoverOperator] = None, size: int = 20, similarity_threshold: float = 0.95):
-        operators = operators or [ChromosomeCrossover(), SinglePointCrossover()]  # default exploiters
+        """
+        Args:
+            operators (List[AbstractCrossoverOperator]): The list of crossover operators to choose from.
+            size (int): Maximum limit of offspring to create (practically it will be it's ``min(size, len(parent_candidates)``)
+            similarity_threshold (float): Don't create crossovers of parents whose similarity exceeds this threshold.
+        """
+        operators = operators or [ChromosomeCrossover(), SinglePointCrossover()]  # default crossovers
         super().__init__(operators)
         self.similarity_threshold = similarity_threshold
 
@@ -122,8 +207,14 @@ class ChooseRandomCrossoverOperator(AbstractCrossover):
 
         return children
 
-    def generate(self, *args, **kwargs):
-        return self(*args, **kwargs)
-
     def is_applicable(self, parent_candidates: list) -> bool:
+        """
+        Only apply crossover if there are enough parent_candidates available.
+
+        Args:
+            parent_candidates: The parent_candidates to check.
+
+        Returns:
+            (bool): Evaluates ``len(parent_candidates) >= self.min_number_candidates_for_crossover``
+        """
         return len(parent_candidates) >= self.min_number_candidates_for_crossover

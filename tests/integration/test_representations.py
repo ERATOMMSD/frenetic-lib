@@ -25,7 +25,6 @@ def get_frenetic(representation):
         representation=representation,
         objective=objective,
         mutator=mutators.FreneticMutator(),
-        exploiter=exploiters.Exploiter(),
         crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )
 

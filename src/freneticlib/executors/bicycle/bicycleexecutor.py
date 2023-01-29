@@ -94,5 +94,4 @@ class BicycleExecutor(Executor):
             # save the data records
             records_df.to_csv(self.results_path / f"sim_record_{self.exec_counter}.csv")
 
-
         return return_value

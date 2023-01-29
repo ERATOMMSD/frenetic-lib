@@ -18,7 +18,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 def run_example():
     # We want a FixStep Kappa representation
     representation = FixStepKappaRepresentation(length=30, variation=5, step=10.0)
-    # representation = CatmullRomRepresentation(control_nodes=30, variation=5)
 
     # Setup an objective. Here: maximize the distance_from_center (i.e. push the vehicle off the road)
     objective = MaxObjective(
@@ -32,11 +31,6 @@ def run_example():
         representation=representation,
         objective=objective,
         mutator=FreneticMutator(),
-        exploiter=exploiters.Exploiter([
-            exploiters.ReverseTest(),
-            exploiters.SplitAndSwap(),
-            exploiters.FlipSign()
-        ]),
         crossover=crossovers.ChooseRandomCrossoverOperator(size=20),
     )
 
@@ -46,10 +40,10 @@ def run_example():
         BeamNGExecutor(
             representation=representation,
             objective=objective,
-            cps_pipeline_path=Path("~/cps-tool-competition"),
-            results_path="./sink/detailed",
-            beamng_home=str(Path("~/Downloads/BeamNG.tech.v0.26.1.0")),
-            beamng_user=str(Path("~/BeamNG.tech").expanduser()),
+            cps_pipeline_path="~/cps-tool-competition",
+            beamng_home="~/Downloads/BeamNG.tech.v0.26.1.0",
+            beamng_user="~/BeamNG.tech",
+            results_path="./data/detailed",
         ),
         CountingStop(n_random=5, n_total=15),  # just a few, since simulation takes long
     )
@@ -57,8 +51,8 @@ def run_example():
     # run the search
     frenetic.start()
 
-    # store the results for later use
-    frenetic.store_results("./sink/dev.csv")
+    # store the history for later use
+    frenetic.store_results("./data/dev.csv")
 
     # Display the progress
     frenetic.plot()

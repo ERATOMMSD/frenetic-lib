@@ -63,7 +63,7 @@ class BeamNGExecutor(Executor):
         beamng_user=None,
         oob_tolerance: float = 0.95,
         max_speed_in_kmh: int = 70,
-        risk_value: float=0.7,
+        risk_value: float = 0.7,
         road_valildator=None
     ):
         super().__init__(representation, objective, results_path, road_valildator)
@@ -82,7 +82,7 @@ class BeamNGExecutor(Executor):
         self.max_speed_in_kmh = max_speed_in_kmh
 
         self.brewer: "BeamNGBrewer" = None  # noqa: F821
-        self.pipeline_path = cps_pipeline_path
+        self.pipeline_path = Path(cps_pipeline_path).expanduser()
         self.beamng_home = Path(beamng_home).expanduser()
         self.beamng_user = Path(beamng_user).expanduser()
         assert self.beamng_user is not None
@@ -99,7 +99,7 @@ class BeamNGExecutor(Executor):
         cartesian = self.representation.to_cartesian(test)
         original_line = geometry.LineString(np.array(cartesian))
         interpolated_points = geometry_utils.cubic_spline(original_line).xy
-        beamng_format = [(x, y, -28.0, self.road_width) for x, y in zip(*interpolated_points)]  # as shown in tests_generation.py
+        beamng_format = [(x, y, -28.0, self.road_width) for x, y in zip(*interpolated_points)]  # as in tests_generation.py
 
         # TODO Not sure why we need to repeat this 2 times...
         counter = 2

@@ -12,7 +12,10 @@ Welcome to frenetic-lib's documentation!
 .. toctree::
    :hidden:
 
+
    Home <self>
+   Architecture <architecture>
+   Usage Example <example>
 
 
 Indices and tables

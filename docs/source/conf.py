@@ -18,17 +18,17 @@ sys.path.insert(0, os.path.abspath('../../src/'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'frenetic-lib'
-copyright = '2022, Stefan Klikovits, Ezequiel Castellano, Ahmet Cetinkaya, Paolo Arcaini'
+copyright = '2023, Stefan Klikovits, Ezequiel Castellano, Ahmet Cetinkaya, Paolo Arcaini'
 author = 'Stefan Klikovits, Ezequiel Castellano, Ahmet Cetinkaya, Paolo Arcaini'
-release = '0.0.1'
+release = '0.9'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'autoapi.extension',
-    # 'sphinx.ext.autodoc',
-    # 'sphinx_autodoc_typehints',
+    'sphinx.ext.autodoc',
+    'sphinx_autodoc_typehints',
     'sphinx.ext.napoleon',  # allow Google-style documentation
     'myst_parser',  # allow Markdown
     'sphinx_rtd_theme',
@@ -56,3 +56,14 @@ pygments_style = 'sphinx'
 autoapi_type = 'python'
 autoapi_dirs = ['../../src/freneticlib']
 autoapi_python_class_content = "both"
+autoapi_template_dir = '_autoapi_templates'
+
+def autoapi_skip_member(app, what, name, obj, skip, options):
+    """Exclude stuff from Sphinx."""
+    is_logger = "logger" in name
+    return skip or is_logger
+
+
+def setup(app):
+    """Add autoapi-skip-member."""
+    app.connect('autoapi-skip-member', autoapi_skip_member)

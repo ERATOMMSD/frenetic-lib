@@ -66,6 +66,9 @@ class Objective(abc.ABC):
 
         Args:
             df (pd.DataFrame): The execution history.
+
+        Returns:
+            df (pd.DataFrame): The filtered execution history.
         """
         pass
 
@@ -83,13 +86,17 @@ class MaxObjective(Objective):
 
         Args:
             df (pd.DataFrame): The execution history.
+
+        Returns:
+            df (pd.DataFrame): The filtered execution history.
         """
         if not self.threshold:  # no threshold defined, return full df
             return df
         return df[df[self.feature] >= self.threshold]
 
     def recalculate_dynamic_threshold(self, df: pd.DataFrame):
-        """Recalculates the dynamic threshold according to `self.dynamic_threshold_quantile` and updates it if the new value is higher than the previous threshold.
+        """Recalculates the dynamic threshold according to `self.dynamic_threshold_quantile`
+        and updates it if the new value is higher than the previous threshold.
 
         Args:
             df (pd.DataFrame): The execution history.
@@ -122,13 +129,17 @@ class MinObjective(Objective):
 
         Args:
             df (pd.DataFrame): The execution history.
+
+        Returns:
+            df (pd.DataFrame): The filtered execution history.
         """
         if not self.threshold:  # no threshold defined, return full df
             return df
         return df[df[self.feature] <= self.threshold]
 
     def recalculate_dynamic_threshold(self, df: pd.DataFrame):
-        """Recalculates the dynamic threshold according to `self.dynamic_threshold_quantile` and updates it if the new value is lower than the previous threshold.
+        """Recalculates the dynamic threshold according to `self.dynamic_threshold_quantile`
+        and updates it if the new value is lower than the previous threshold.
 
         Args:
             df (pd.DataFrame): The execution history.

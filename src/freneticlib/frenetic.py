@@ -18,7 +18,7 @@ class Frenetic(object):
         """Constructor.
 
         Args:
-            core (FreneticCore): The core instance that handles the ask/tell interface, mutation
+            core (FreneticCore): The core instance that handles the ask/tell interface, mutation.
             executor (Executor): Specifies the executor (e.g. Bicycle executor).
             stop_criterion (StopCriterion): Specification of when to stop random phase and completely.
         """
@@ -74,15 +74,23 @@ class Frenetic(object):
 
         Creates a line plot showing the objective feature's value for each simulation.
         Random generations are shown in gray, the mutated values in blue.
-        Args:
-            filename (str, optional): If a filename is specified, plot will be stored on disk. Otherwise, it will be shown on screen. Defaults to None.
 
+        Args:
+            filename (str, optional): If a filename is specified, plot will be stored on disk.
+                Otherwise, it will be shown on screen. Defaults to None.
         """
         feature = self.core.objective.feature
+        plt.rcParams["figure.dpi"] = 300
 
         # plot random part
-        ax = self.core.history[self.core.history.method == "random"].plot(y=feature, color="gray", grid=True, ylabel=feature, xlabel="# Simulations", **kwargs)
-        ax = self.core.history[self.core.history.method != "random"].plot(ax=ax, y=feature, color="blue", grid=True, ylabel=feature ,xlabel="# Simulations", **kwargs)
+        ax = self.core.history[self.core.history.method == "random"].plot(y=feature,
+                                                                          color="gray", grid=True,
+                                                                          ylabel=feature, xlabel="# Simulations",
+                                                                          **kwargs)
+        ax = self.core.history[self.core.history.method != "random"].plot(ax=ax, y=feature,
+                                                                          color="blue", grid=True,
+                                                                          ylabel=feature, xlabel="# Simulations",
+                                                                          **kwargs)
         ax.legend(["random", "mutation"])
         if filename:
             pathlib.Path(filename).parent.mkdir(exist_ok=True)
