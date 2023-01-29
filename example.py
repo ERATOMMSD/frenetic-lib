@@ -41,9 +41,9 @@ def run_example():
         executor=BicycleExecutor(
             representation=representation,
             objective=objective,
-            # results_path="./sink/detailed"
+            # results_path="./data/detailed"
         ),
-        CountingStop(n_random=50, n_total=250),
+        stop_criterion=CountingStop(n_random=50, n_total=250),
     )
 
     # If we wanted to extend a previous run, we could load the history like so:
