@@ -83,7 +83,6 @@ class Vehicle:
         self.py += dt * self.v * np.sin(self.psi + beta)
         self.psi += dt * self.v * np.sin(beta)
 
-        # TODO: check this part
         self.psi %= 2 * np.pi
         if self.psi > np.pi:
             self.psi -= 2 * np.pi
