@@ -83,7 +83,6 @@ class Vehicle:
         self.py += dt * self.v * np.sin(self.psi + beta)
         self.psi += dt * self.v * np.sin(beta)
 
-        # TODO: check this part
         self.psi %= 2 * np.pi
         if self.psi > np.pi:
             self.psi -= 2 * np.pi
@@ -116,7 +115,7 @@ class Vehicle:
         return {
             "ts": np.array(self.ts),  # sampling time instants where data is collected
             "short_ts": np.array(self.ts[:-1]),  # time instants where jerks and costs are collected
-            "short_short_ts": np.array(self.ts[:-1]),  # time instants where lat_jerks and lat_costs are collected
+            "short_short_ts": np.array(self.ts[:-2]),  # time instants where lat_jerks and lat_costs are collected
             "pxs": np.array(self.pxs),
             "pys": np.array(self.pys),
             "speed": np.array(self.vs),
