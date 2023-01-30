@@ -1,5 +1,7 @@
 sphinx-autoapi
 myst-parser
+sphinx-rtd-theme
+sphinx-autodoc-typehints
 
 numpy
 pandas
