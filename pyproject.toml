@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 #[project]
 name = "freneticlib"
-version = "0.9"
+version = "1.0"
 description = "The Frenetic algorithm for search-based ADS road generation"
 license = "MIT"
 authors = [
