@@ -64,6 +64,18 @@ pip install freneticlib
 To alternatively obtain the latest (non-release) version from Github, use    
 `pip install git+https://github.com/ERATOMMSD/frenetic-lib`
 
+**Note:**
+There might be an issue with installing the `bezier` library. This is a known problem ().
+If you encounter an error stating that 
+```
+The BEZIER_INSTALL_PREFIX environment variable must be set
+```
+please install `bezier` first using the following command:
+```
+BEZIER_NO_EXTENSION=true \
+  python  -m pip install --upgrade bezier --no-binary=bezier
+```
+
 ## Usage Example
 
 freneticlib features two primary classes: `FreneticCore` and `Frenetic`.
